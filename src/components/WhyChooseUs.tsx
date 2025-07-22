@@ -1,6 +1,17 @@
+"use client";
+
 import { HeartIcon, SparklesIcon, UserGroupIcon, CakeIcon, GiftIcon, StarIcon } from '@heroicons/react/24/outline';
 
 export default function WhyChooseUs() {
+    const handleScrollToPackages = () => {
+        const packagesSection = document.getElementById('bang-gia-dich-vu');
+        if (packagesSection) {
+            packagesSection.scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    };
     const benefits = [
         {
             icon: SparklesIcon,
@@ -47,7 +58,11 @@ export default function WhyChooseUs() {
                         <span className="text-sm font-medium tracking-widest text-rose-600 uppercase mb-2 block">
                             Lợi ích vượt trội
                         </span>
-                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-gray-900 mb-6 leading-tight">
+                        <h2 
+                            className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-gray-900 mb-6 leading-tight cursor-pointer hover:text-rose-600 transition-colors duration-300"
+                            onClick={handleScrollToPackages}
+                            title="Click để xem gói dịch vụ"
+                        >
                             Tại sao chọn chúng tôi?
                         </h2>
                         <div className="w-20 h-1 bg-gradient-to-r from-rose-400 to-pink-400 mx-auto mb-8 rounded-full"></div>
