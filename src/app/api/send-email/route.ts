@@ -1,37 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend with API key validation
+const apiKey = process.env.RESEND_API_KEY;
+
+if (!apiKey) {
+  console.warn('⚠️ RESEND_API_KEY is not set. Email sending will be disabled.');
+}
+
+const resend = apiKey ? new Resend(apiKey) : null;
 
 export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { fullName, phone, weddingDate, requirements } = body;
+
+    // Validate required fields
+    if (!fullName || !phone) {
+      return NextResponse.json(
+        { error: 'Họ tên và số điện thoại là bắt buộc' },
+        { status: 400 }
+      );
+    }
+
+    // Format wedding date for display
+    const formattedWeddingDate = weddingDate
+      ? new Date(weddingDate).toLocaleDateString('vi-VN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+      : 'Chưa xác định';
+
     try {
-        const body = await request.json();
-        const { fullName, phone, weddingDate, requirements } = body;
+      // Check if Resend is available
+      if (!resend) {
+        console.log('📧 Email would be sent (Resend API key not configured):');
+        console.log('From:', fullName);
+        console.log('Phone:', phone);
+        console.log('Wedding Date:', formattedWeddingDate);
+        console.log('Requirements:', requirements);
 
-        // Validate required fields
-        if (!fullName || !phone) {
-            return NextResponse.json(
-                { error: 'Họ tên và số điện thoại là bắt buộc' },
-                { status: 400 }
-            );
-        }
+        return NextResponse.json({
+          success: true,
+          message: 'Yêu cầu đã được ghi nhận thành công!'
+        });
+      }
 
-        // Format wedding date for display
-        const formattedWeddingDate = weddingDate
-            ? new Date(weddingDate).toLocaleDateString('vi-VN', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            })
-            : 'Chưa xác định';
-
-        try {
-            // Send email using Resend
-            const emailResult = await resend.emails.send({
-                from: 'Wedding Dreams <onboarding@resend.dev>', // You'll need to setup your own domain
-                to: ['ntnghia.dev@gmail.com'],
-                subject: `Yêu cầu tư vấn cưới mới từ ${fullName}`,
-                html: `
+      // Send email using Resend
+      const emailResult = await resend.emails.send({
+        from: 'Wedding Dreams <onboarding@resend.dev>', // You'll need to setup your own domain
+        to: ['ntnghia.dev@gmail.com'],
+        subject: `Yêu cầu tư vấn cưới mới từ ${fullName}`,
+        html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #fff5f5 0%, #fef7f7 100%); border-radius: 16px; overflow: hidden;">
             <div style="background: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%); color: white; padding: 30px; text-align: center;">
               <h1 style="margin: 0; font-size: 28px; font-weight: bold;">💒 Wedding Dreams</h1>
@@ -78,7 +99,7 @@ export async function POST(request: NextRequest) {
             </div>
           </div>
         `,
-                text: `
+        text: `
 Yêu cầu tư vấn cưới mới
 
 Họ và tên: ${fullName}
@@ -88,39 +109,39 @@ Yêu cầu riêng: ${requirements || 'Không có yêu cầu đặc biệt'}
 
 Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
         `
-            });
+      });
 
-            console.log('Email sent successfully:', emailResult);
+      console.log('Email sent successfully:', emailResult);
 
-            return NextResponse.json({
-                success: true,
-                message: 'Đã gửi yêu cầu tư vấn thành công! Chúng tôi sẽ liên hệ với bạn trong vòng 24h.'
-            });
+      return NextResponse.json({
+        success: true,
+        message: 'Đã gửi yêu cầu tư vấn thành công! Chúng tôi sẽ liên hệ với bạn trong vòng 24h.'
+      });
 
-        } catch (emailError) {
-            console.error('Email sending error:', emailError);
+    } catch (emailError) {
+      console.error('Email sending error:', emailError);
 
-            // Fallback - still log the request and return success to user
-            console.log('Fallback - Email content for ntnghia.dev@gmail.com:');
-            console.log({
-                fullName,
-                phone,
-                weddingDate: formattedWeddingDate,
-                requirements,
-                timestamp: new Date().toLocaleString('vi-VN')
-            });
+      // Fallback - still log the request and return success to user
+      console.log('Fallback - Email content for ntnghia.dev@gmail.com:');
+      console.log({
+        fullName,
+        phone,
+        weddingDate: formattedWeddingDate,
+        requirements,
+        timestamp: new Date().toLocaleString('vi-VN')
+      });
 
-            return NextResponse.json({
-                success: true,
-                message: 'Đã gửi yêu cầu tư vấn thành công! Chúng tôi sẽ liên hệ với bạn trong vòng 24h.'
-            });
-        }
-
-    } catch (error) {
-        console.error('API Error:', error);
-        return NextResponse.json(
-            { error: 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.' },
-            { status: 500 }
-        );
+      return NextResponse.json({
+        success: true,
+        message: 'Đã gửi yêu cầu tư vấn thành công! Chúng tôi sẽ liên hệ với bạn trong vòng 24h.'
+      });
     }
+
+  } catch (error) {
+    console.error('API Error:', error);
+    return NextResponse.json(
+      { error: 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.' },
+      { status: 500 }
+    );
+  }
 }
