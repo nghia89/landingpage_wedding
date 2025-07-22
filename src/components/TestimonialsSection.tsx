@@ -37,7 +37,7 @@ export default function TestimonialsSection() {
     ];
 
     return (
-        <section className="py-20 lg:py-32 bg-gradient-to-b from-rose-50/30 to-white relative overflow-hidden">
+        <section id="testimonials" className="py-20 lg:py-32 bg-gradient-to-b from-rose-50/30 to-white relative overflow-hidden">
             {/* Decorative elements */}
             <div className="absolute top-10 left-10 w-40 h-40 bg-pink-200 rounded-full opacity-10 animate-pulse"></div>
             <div className="absolute bottom-20 right-16 w-32 h-32 bg-rose-200 rounded-full opacity-15 animate-pulse delay-700"></div>

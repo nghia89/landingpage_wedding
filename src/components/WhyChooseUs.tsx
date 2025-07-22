@@ -46,7 +46,7 @@ export default function WhyChooseUs() {
     ];
 
     return (
-        <section className="py-20 lg:py-32 bg-gradient-to-br from-rose-50 via-pink-25 to-amber-50 relative overflow-hidden">
+        <section id="tai-sao-chon" className="py-20 lg:py-32 bg-gradient-to-br from-rose-50 via-pink-25 to-amber-50 relative overflow-hidden">
             {/* Decorative background elements */}
             <div className="absolute top-0 left-0 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
             <div className="absolute bottom-0 right-0 w-96 h-96 bg-amber-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse delay-1000"></div>

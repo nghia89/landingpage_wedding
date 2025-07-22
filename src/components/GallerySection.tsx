@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 
 interface GalleryImage {
@@ -10,6 +10,8 @@ interface GalleryImage {
 }
 
 export default function GallerySection() {
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const imagesRef = useRef<HTMLDivElement>(null);
     const galleryImages = useMemo<GalleryImage[]>(() => [
         {
             src: "/gallery/gallery1.jpeg",
@@ -124,8 +126,33 @@ export default function GallerySection() {
         };
     }, [isLightboxOpen, selectedIndex, galleryImages]);
 
+    // Parallax effect for gallery images
+    useEffect(() => {
+        const handleScroll = () => {
+            if (sectionRef.current && imagesRef.current) {
+                const rect = sectionRef.current.getBoundingClientRect();
+                const scrolled = window.pageYOffset;
+                const sectionTop = sectionRef.current.offsetTop;
+                const sectionHeight = sectionRef.current.offsetHeight;
+
+                // Calculate relative scroll position within the section
+                const relativeScroll = Math.max(0, scrolled - sectionTop + window.innerHeight);
+                const parallaxSpeed = 0.1; // Reduced speed for subtle effect
+
+                // Only apply parallax when section is in view
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    const parallaxOffset = relativeScroll * parallaxSpeed;
+                    imagesRef.current.style.transform = `translateY(${-parallaxOffset}px)`;
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
-        <section className="py-20 lg:py-32 bg-gradient-to-b from-white to-rose-50/50 relative">
+        <section ref={sectionRef} id="gallery" className="py-20 lg:py-32 bg-gradient-to-b from-white to-rose-50/50 relative overflow-hidden">
             {/* Decorative elements */}
             <div className="absolute top-20 right-10 w-32 h-32 bg-pink-200 rounded-full opacity-10 animate-pulse"></div>
             <div className="absolute bottom-32 left-16 w-24 h-24 bg-amber-200 rounded-full opacity-20 animate-pulse delay-500"></div>
@@ -147,68 +174,70 @@ export default function GallerySection() {
                 </div>
 
                 {/* Gallery Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-8xl mx-auto">
-                    {galleryImages.map((image, index) => (
-                        <div
-                            key={index}
-                            onClick={() => openLightbox(image, index)}
-                            className={`group relative bg-white rounded-2xl lg:rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:scale-105 hover:-translate-y-2 transition-all duration-700 cursor-pointer ${index === 0 ? 'md:col-span-2 lg:col-span-2 md:row-span-2' :
-                                index === 3 ? 'lg:col-span-2' : ''
-                                }`}
-                        >
-                            <div className={`relative ${index === 0 ? 'aspect-[1/1] md:aspect-[1/1]' :
-                                index === 3 ? 'aspect-[2/1]' :
-                                    'aspect-square'
-                                } bg-gradient-to-br from-rose-100 to-pink-100`}>
-                                <Image
-                                    src={image.src}
-                                    alt={image.alt}
-                                    fill
-                                    className="object-cover group-hover:scale-110 transition-transform duration-700"
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                                />
+                <div >
+                    <div ref={imagesRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 max-w-8xl mx-auto">
+                        {galleryImages.map((image, index) => (
+                            <div
+                                key={index}
+                                onClick={() => openLightbox(image, index)}
+                                className={`group relative bg-white rounded-2xl lg:rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transform hover:scale-105 hover:-translate-y-2 transition-all duration-700 cursor-pointer ${index === 0 ? 'md:col-span-2 lg:col-span-2 md:row-span-2' :
+                                    index === 3 ? 'lg:col-span-2' : ''
+                                    }`}
+                            >
+                                <div className={`relative ${index === 0 ? 'aspect-[1/1] md:aspect-[1/1]' :
+                                    index === 3 ? 'aspect-[2/1]' :
+                                        'aspect-square'
+                                    } bg-gradient-to-br from-rose-100 to-pink-100`}>
+                                    <Image
+                                        src={image.src}
+                                        alt={image.alt}
+                                        fill
+                                        className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                                    />
 
-                                {/* Elegant overlay */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                                    {/* Elegant overlay */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
 
-                                {/* Content overlay */}
-                                <div className="absolute inset-0 flex flex-col justify-end p-6 lg:p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
-                                    <div className="text-white">
-                                        <span className="text-sm font-medium text-pink-200 tracking-wide uppercase">
-                                            {image.category}
-                                        </span>
-                                        <p className="font-serif text-lg font-medium mt-1 leading-tight">
-                                            {image.alt}
-                                        </p>
+                                    {/* Content overlay */}
+                                    <div className="absolute inset-0 flex flex-col justify-end p-6 lg:p-8 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0">
+                                        <div className="text-white">
+                                            <span className="text-sm font-medium text-pink-200 tracking-wide uppercase">
+                                                {image.category}
+                                            </span>
+                                            <p className="font-serif text-lg font-medium mt-1 leading-tight">
+                                                {image.alt}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Zoom icon */}
+                                    <div className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition-all duration-300 delay-200">
+                                        <svg
+                                            className="w-5 h-5 text-gray-700"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={1.5}
+                                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                                            />
+                                        </svg>
                                     </div>
                                 </div>
 
-                                {/* Zoom icon */}
-                                <div className="absolute top-4 right-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition-all duration-300 delay-200">
-                                    <svg
-                                        className="w-5 h-5 text-gray-700"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={1.5}
-                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                                        />
-                                    </svg>
-                                </div>
+                                {/* Bottom accent */}
+                                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-rose-400 to-pink-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
                             </div>
-
-                            {/* Bottom accent */}
-                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-rose-400 to-pink-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
-                {/* View More Button */}
-                <div className="text-center mt-16 lg:mt-20">
+                {/* View More Button - Outside parallax container */}
+                <div className="text-center">
                     <button
                         onClick={() => openLightbox(galleryImages[0], 0)}
                         className="group bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-semibold px-12 py-4 rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 hover:-translate-y-1 transition-all duration-500 text-lg tracking-wide"

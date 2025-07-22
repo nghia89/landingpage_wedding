@@ -1,8 +1,31 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 
 export default function HeroSection() {
+    const backgroundRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (backgroundRef.current && contentRef.current) {
+                const scrolled = window.pageYOffset;
+                const parallaxSpeed = 0.5;
+                const contentSpeed = 0.2;
+
+                // Background parallax - slower movement
+                backgroundRef.current.style.transform = `translateY(${scrolled * parallaxSpeed}px)`;
+
+                // Content parallax - subtle movement
+                contentRef.current.style.transform = `translateY(${scrolled * contentSpeed}px)`;
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     const handleScrollToContact = () => {
         const contactSection = document.getElementById('dat-lich-tu-van');
         if (contactSection) {
@@ -24,9 +47,10 @@ export default function HeroSection() {
     };
 
     return (
-        <section className="relative min-h-[90vh] w-full flex items-center justify-center overflow-hidden">
-            {/* Background Image with elegant gradient overlay */}
-            <div className="absolute inset-0 z-0">
+        <section id="hero" className="relative min-h-[90vh] w-full flex items-center justify-center overflow-hidden pt-20">
+            {/* Navbar will have fixed positioning, so add top padding to prevent overlap */}
+            {/* Background Image with elegant gradient overlay and parallax */}
+            <div ref={backgroundRef} className="absolute inset-0 z-0 will-change-transform">
                 <div className="absolute inset-0 bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 opacity-90"></div>
                 <Image
                     src="/background-wedding.jpeg"
@@ -43,8 +67,8 @@ export default function HeroSection() {
             <div className="absolute top-20 left-10 w-20 h-20 bg-pink-200 rounded-full opacity-20 animate-pulse"></div>
             <div className="absolute bottom-32 right-16 w-16 h-16 bg-amber-200 rounded-full opacity-30 animate-pulse delay-1000"></div>
 
-            {/* Content Container */}
-            <div className="relative z-10 container mx-auto px-6 text-center text-white">
+            {/* Content Container with parallax */}
+            <div ref={contentRef} className="relative z-10 container mx-auto px-6 text-center text-white will-change-transform">
                 <div className="max-w-5xl mx-auto space-y-8 animate-fade-in-up">
                     {/* Main Title */}
                     <h1 className="text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold leading-[1.1] tracking-tight">
