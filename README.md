@@ -1,4 +1,26 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wedding Landing Page
+
+A beautiful and responsive wedding planning landing page built with Next.js, TypeScript, and TailwindCSS.
+
+## Features
+
+- **Hero Section**: Elegant hero section with wedding background image and call-to-action buttons
+- **Responsive Design**: Mobile-first approach that works on all devices
+- **Modern Stack**: Built with Next.js 14, TypeScript, and TailwindCSS
+- **Optimized**: Fast loading and SEO-friendly
+
+## Components
+
+### HeroSection
+
+The main hero component featuring:
+
+- Full-width wedding background image with overlay
+- Romantic typography using serif fonts
+- Two call-to-action buttons:
+  - "Đặt lịch tư vấn miễn phí" (Primary CTA)
+  - "Xem bảng giá dịch vụ" (Secondary CTA)
+- Fully responsive design
 
 ## Getting Started
 
