@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       // Send email using Resend
       const emailResult = await resend.emails.send({
         from: 'Wedding Dreams <onboarding@resend.dev>', // You'll need to setup your own domain
-        to: ['ntnghia.dev@gmail.com'],
+        to: ['nghia891996@gmail.com'],
         subject: `Yêu cầu tư vấn cưới mới từ ${fullName}`,
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #fff5f5 0%, #fef7f7 100%); border-radius: 16px; overflow: hidden;">
