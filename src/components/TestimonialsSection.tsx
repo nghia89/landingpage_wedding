@@ -105,10 +105,10 @@ export default function TestimonialsSection() {
                                 {/* Testimonial content */}
                                 <div className="space-y-5 text-gray-700 leading-relaxed">
                                     <p className="text-lg font-medium italic relative">
-                                        "{testimonial.content}"
+                                        &ldquo;{testimonial.content}&rdquo;
                                     </p>
                                     <p className="text-lg font-medium italic relative">
-                                        "{testimonial.content2}"
+                                        &ldquo;{testimonial.content2}&rdquo;
                                     </p>
                                 </div>
 

@@ -59,7 +59,7 @@ export default function ContactFormSection() {
                 setSubmitStatus('error');
                 setSubmitMessage(result.error || 'Có lỗi xảy ra khi gửi yêu cầu');
             }
-        } catch (error) {
+        } catch {
             setSubmitStatus('error');
             setSubmitMessage('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
         } finally {

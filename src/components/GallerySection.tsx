@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 
+interface GalleryImage {
+    src: string;
+    alt: string;
+    category: string;
+}
+
 export default function GallerySection() {
-    const galleryImages = [
+    const galleryImages = useMemo<GalleryImage[]>(() => [
         {
             src: "/gallery/gallery1.jpeg",
             alt: "Tiệc cưới sang trọng trong sảnh lớn",
@@ -45,13 +51,13 @@ export default function GallerySection() {
             alt: "Khu vực chụp ảnh cưới lãng mạn",
             category: "Photo booth"
         }
-    ];
+    ], []);
 
-    const [selectedImage, setSelectedImage] = useState<any>(null);
+    const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-    const openLightbox = (image: any, index: number) => {
+    const openLightbox = (image: GalleryImage, index: number) => {
         setSelectedImage(image);
         setSelectedIndex(index);
         setIsLightboxOpen(true);
