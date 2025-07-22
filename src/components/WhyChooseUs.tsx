@@ -6,7 +6,7 @@ export default function WhyChooseUs() {
     const handleScrollToPackages = () => {
         const packagesSection = document.getElementById('bang-gia-dich-vu');
         if (packagesSection) {
-            packagesSection.scrollIntoView({ 
+            packagesSection.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             });
@@ -58,7 +58,7 @@ export default function WhyChooseUs() {
                         <span className="text-sm font-medium tracking-widest text-rose-600 uppercase mb-2 block">
                             Lợi ích vượt trội
                         </span>
-                        <h2 
+                        <h2
                             className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-gray-900 mb-6 leading-tight cursor-pointer hover:text-rose-600 transition-colors duration-300"
                             onClick={handleScrollToPackages}
                             title="Click để xem gói dịch vụ"
@@ -107,7 +107,10 @@ export default function WhyChooseUs() {
 
                 {/* Call to action */}
                 <div className="text-center mt-16 lg:mt-20">
-                    <button className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-semibold px-12 py-4 rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 hover:-translate-y-1 transition-all duration-500 text-lg tracking-wide">
+                    <button
+                        onClick={handleScrollToPackages}
+                        className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-semibold px-12 py-4 rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 hover:-translate-y-1 transition-all duration-500 text-lg tracking-wide"
+                    >
                         Khám phá thêm dịch vụ
                     </button>
                 </div>
