@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withMongo } from '@/lib/withMongo';
+import withMongo from '@/lib/withMongo';
 import Appointment from '@/models/Appointment';
 
 // GET - Get single appointment by ID
-async function getAppointment(
+export const GET = withMongo(async (
     request: NextRequest,
     { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> => {
     try {
         const { id } = params;
 
@@ -31,13 +31,13 @@ async function getAppointment(
             { status: 500 }
         );
     }
-}
+});
 
 // PUT - Update appointment by ID
-async function updateAppointment(
+export const PUT = withMongo(async (
     request: NextRequest,
     { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> => {
     try {
         const { id } = params;
         const body = await request.json();
@@ -77,13 +77,13 @@ async function updateAppointment(
             { status: 500 }
         );
     }
-}
+});
 
 // DELETE - Delete appointment by ID
-async function deleteAppointment(
+export const DELETE = withMongo(async (
     request: NextRequest,
     { params }: { params: { id: string } }
-) {
+): Promise<NextResponse> => {
     try {
         const { id } = params;
 
@@ -109,9 +109,4 @@ async function deleteAppointment(
             { status: 500 }
         );
     }
-}
-
-// Export with MongoDB connection wrapper
-export const GET = withMongo(getAppointment);
-export const PUT = withMongo(updateAppointment);
-export const DELETE = withMongo(deleteAppointment);
+});

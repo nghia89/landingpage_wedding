@@ -5,9 +5,11 @@ import connectMongo from './mongodb';
  * @param handler - The API route handler function
  * @returns A wrapped handler that automatically connects to MongoDB before execution
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function withMongo<T extends (...args: any[]) => Promise<any>>(
     handler: T
 ): T {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (async (...args: any[]) => {
         try {
             // Automatically connect to MongoDB before running the handler

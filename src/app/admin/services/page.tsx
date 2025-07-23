@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 
 // Service Package interface
 interface ServicePackage {
-    id: string;
+    _id: string;
     name: string;
     price: number;
     description: string;
@@ -13,6 +13,7 @@ interface ServicePackage {
     category: 'basic' | 'standard' | 'premium' | 'luxury';
     isActive: boolean;
     createdAt: string;
+    updatedAt?: string;
 }
 
 // Form data interface
@@ -32,6 +33,9 @@ export default function ServicesPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingService, setEditingService] = useState<ServicePackage | null>(null);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string>('');
+    const [search, setSearch] = useState('');
     const [formData, setFormData] = useState<ServiceFormData>({
         name: '',
         price: '',
@@ -41,118 +45,37 @@ export default function ServicesPage() {
         isActive: true
     });
 
-    // Mock service data
-    const mockServices: ServicePackage[] = [
-        {
-            id: '1',
-            name: 'Gói Cơ Bản',
-            price: 15000000,
-            description: 'Gói dịch vụ cưới cơ bản phù hợp cho 50-80 khách',
-            features: [
-                'Trang trí sân khấu cơ bản',
-                'Âm thanh - ánh sáng',
-                'MC dẫn chương trình',
-                'Chụp ảnh phóng sự (200 ảnh)',
-                '1 xe hoa cô dâu'
-            ],
-            category: 'basic',
-            isActive: true,
-            createdAt: '2025-07-01T10:00:00'
-        },
-        {
-            id: '2',
-            name: 'Gói Tiêu Chuẩn',
-            price: 25000000,
-            description: 'Gói dịch vụ cưới tiêu chuẩn cho 80-150 khách',
-            features: [
-                'Trang trí sân khấu cao cấp',
-                'Hệ thống âm thanh chuyên nghiệp',
-                'MC + ca sĩ',
-                'Chụp ảnh + quay phim',
-                '2 xe hoa + trang trí nhà',
-                'Make-up cô dâu',
-                'Phục vụ tiệc'
-            ],
-            category: 'standard',
-            isActive: true,
-            createdAt: '2025-07-01T10:00:00'
-        },
-        {
-            id: '3',
-            name: 'Gói Cao Cấp',
-            price: 45000000,
-            description: 'Gói dịch vụ cưới cao cấp cho 150-300 khách',
-            features: [
-                'Trang trí sân khấu sang trọng',
-                'Hệ thống âm thanh, ánh sáng LED',
-                'MC chuyên nghiệp + ban nhạc',
-                'Chụp ảnh + quay phim 4K',
-                '3 xe hoa + trang trí toàn bộ',
-                'Make-up + làm tóc cô dâu',
-                'Phục vụ tiệc VIP',
-                'Thiết kế thiệp cưới',
-                'Pháo hoa'
-            ],
-            category: 'premium',
-            isActive: true,
-            createdAt: '2025-07-01T10:00:00'
-        },
-        {
-            id: '4',
-            name: 'Gói Premium',
-            price: 80000000,
-            description: 'Gói dịch vụ cưới đẳng cấp cho 300+ khách',
-            features: [
-                'Thiết kế trang trí theo concept',
-                'Hệ thống âm thanh, ánh sáng chuyên nghiệp',
-                'MC + ban nhạc + vũ đoàn',
-                'Chụp ảnh + quay phim cinematic',
-                'Đoàn xe hoa + trang trí xa hoa',
-                'Make-up artist chuyên nghiệp',
-                'Phục vụ tiệc 5 sao',
-                'Thiết kế thiệp + menu',
-                'Pháo hoa + hiệu ứng đặc biệt',
-                'Coordinator chuyên nghiệp',
-                'Live streaming'
-            ],
-            category: 'luxury',
-            isActive: true,
-            createdAt: '2025-07-01T10:00:00'
-        },
-        {
-            id: '5',
-            name: 'Gói Truyền Thống',
-            price: 20000000,
-            description: 'Gói dịch vụ cưới theo phong cách truyền thống Việt Nam',
-            features: [
-                'Trang trí theo phong cách truyền thống',
-                'Âm thanh - nhạc cổ điển',
-                'MC dẫn lễ theo nghi thức',
-                'Chụp ảnh phóng sự',
-                'Xe hoa truyền thống',
-                'Trang phục áo dài',
-                'Lễ gia tiên'
-            ],
-            category: 'standard',
-            isActive: false,
-            createdAt: '2025-07-01T10:00:00'
+    // Fetch services from API
+    const fetchServices = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError('');
+
+            const params = new URLSearchParams();
+            if (search) params.append('search', search);
+            if (categoryFilter !== 'all') params.append('category', categoryFilter);
+            params.append('limit', '100'); // Get all services for admin
+
+            const response = await fetch(`/api/services?${params}`);
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error || 'Lỗi tải dữ liệu');
+            }
+
+            setServices(data.data);
+            setFilteredServices(data.data);
+        } catch (error) {
+            console.error('Error fetching services:', error);
+            setError(error instanceof Error ? error.message : 'Lỗi tải dữ liệu');
+        } finally {
+            setLoading(false);
         }
-    ];
+    }, [search, categoryFilter]);
 
     useEffect(() => {
-        // Load services (in real app, this would be an API call)
-        setServices(mockServices);
-        setFilteredServices(mockServices);
-    }, []);
-
-    // Filter services by category
-    useEffect(() => {
-        if (categoryFilter === 'all') {
-            setFilteredServices(services);
-        } else {
-            setFilteredServices(services.filter(service => service.category === categoryFilter));
-        }
-    }, [services, categoryFilter]);
+        fetchServices();
+    }, [fetchServices]);
 
     // Format price
     const formatPrice = (price: number) => {
@@ -174,43 +97,64 @@ export default function ServicesPage() {
     };
 
     // Handle form submission
-    const handleSubmit = () => {
-        // Validate required fields
-        if (!formData.name.trim() || !formData.price.trim() || !formData.description.trim()) {
-            alert('Vui lòng điền đầy đủ thông tin bắt buộc (Tên gói, Giá, Mô tả)');
-            return;
+    const handleSubmit = async () => {
+        try {
+            setLoading(true);
+            setError('');
+
+            // Validate required fields
+            if (!formData.name.trim() || !formData.price.trim() || !formData.description.trim()) {
+                setError('Vui lòng điền đầy đủ thông tin bắt buộc (Tên gói, Giá, Mô tả)');
+                return;
+            }
+
+            // Validate features
+            const validFeatures = formData.features.filter(feature => feature.trim() !== '');
+            if (validFeatures.length === 0) {
+                setError('Vui lòng thêm ít nhất một tính năng cho gói dịch vụ');
+                return;
+            }
+
+            const serviceData = {
+                name: formData.name,
+                price: parseFloat(formData.price),
+                description: formData.description,
+                features: validFeatures,
+                category: formData.category,
+                isActive: formData.isActive
+            };
+
+            let response;
+            if (editingService) {
+                // Update existing service
+                response = await fetch('/api/services', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: editingService._id, ...serviceData })
+                });
+            } else {
+                // Create new service
+                response = await fetch('/api/services', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(serviceData)
+                });
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || 'Lỗi lưu dữ liệu');
+            }
+
+            // Refresh services list
+            await fetchServices();
+            handleCloseModal();
+        } catch (error) {
+            console.error('Error saving service:', error);
+            setError(error instanceof Error ? error.message : 'Lỗi lưu dữ liệu');
+        } finally {
+            setLoading(false);
         }
-
-        // Validate features
-        const validFeatures = formData.features.filter(feature => feature.trim() !== '');
-        if (validFeatures.length === 0) {
-            alert('Vui lòng thêm ít nhất một tính năng cho gói dịch vụ');
-            return;
-        }
-
-        const newService: ServicePackage = {
-            id: editingService ? editingService.id : Date.now().toString(),
-            name: formData.name,
-            price: parseInt(formData.price),
-            description: formData.description,
-            features: validFeatures,
-            category: formData.category,
-            isActive: formData.isActive,
-            createdAt: editingService ? editingService.createdAt : new Date().toISOString()
-        };
-
-        if (editingService) {
-            // Update existing service
-            setServices(services.map(service =>
-                service.id === editingService.id ? newService : service
-            ));
-        } else {
-            // Add new service
-            setServices([...services, newService]);
-        }
-
-        // Reset form and close modal
-        handleCloseModal();
     };
 
     // Handle opening modal for new service
@@ -224,6 +168,7 @@ export default function ServicesPage() {
             category: 'basic',
             isActive: true
         });
+        setError('');
         setIsModalOpen(true);
     };
 
@@ -238,6 +183,7 @@ export default function ServicesPage() {
             category: service.category,
             isActive: service.isActive
         });
+        setError('');
         setIsModalOpen(true);
     };
 
@@ -245,6 +191,7 @@ export default function ServicesPage() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingService(null);
+        setError('');
         setFormData({
             name: '',
             price: '',
@@ -256,16 +203,62 @@ export default function ServicesPage() {
     };
 
     // Handle delete
-    const handleDelete = (id: string) => {
-        setServices(services.filter(service => service.id !== id));
-        setDeleteConfirmId(null);
+    const handleDelete = async (id: string) => {
+        try {
+            setLoading(true);
+            setError('');
+
+            const response = await fetch(`/api/services?id=${id}`, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || 'Lỗi xóa dữ liệu');
+            }
+
+            // Refresh services list
+            await fetchServices();
+            setDeleteConfirmId(null);
+        } catch (error) {
+            console.error('Error deleting service:', error);
+            setError(error instanceof Error ? error.message : 'Lỗi xóa dữ liệu');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Handle toggle active status
-    const handleToggleActive = (id: string) => {
-        setServices(services.map(service =>
-            service.id === id ? { ...service, isActive: !service.isActive } : service
-        ));
+    const handleToggleActive = async (id: string) => {
+        try {
+            setLoading(true);
+            setError('');
+
+            const service = services.find(s => s._id === id);
+            if (!service) return;
+
+            const response = await fetch('/api/services', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: service._id,
+                    isActive: !service.isActive
+                })
+            });
+
+            const result = await response.json();
+            if (!result.success) {
+                throw new Error(result.error || 'Lỗi cập nhật trạng thái');
+            }
+
+            // Refresh services list
+            await fetchServices();
+        } catch (error) {
+            console.error('Error toggling service status:', error);
+            setError(error instanceof Error ? error.message : 'Lỗi cập nhật trạng thái');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Handle feature changes
@@ -304,7 +297,8 @@ export default function ServicesPage() {
                     </div>
                     <button
                         onClick={handleAddNew}
-                        className="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300 flex items-center space-x-2"
+                        disabled={loading}
+                        className="bg-rose-600 hover:bg-rose-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300 flex items-center space-x-2"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -313,73 +307,118 @@ export default function ServicesPage() {
                     </button>
                 </div>
 
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                        <div className="flex">
+                            <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>{error}</span>
+                        </div>
+                    </div>
+                )}
+
+                {/* Loading State */}
+                {loading && services.length === 0 && (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600"></div>
+                        <span className="ml-3 text-gray-600">Đang tải dữ liệu...</span>
+                    </div>
+                )}
+
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h6m-6 4h6m-2 4h2" />
-                                </svg>
+                {services.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex items-center">
+                                <div className="p-2 bg-blue-100 rounded-lg">
+                                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h6m-6 4h6m-2 4h2" />
+                                    </svg>
+                                </div>
+                                <div className="ml-4">
+                                    <p className="text-sm font-medium text-gray-600">Tổng gói dịch vụ</p>
+                                    <p className="text-2xl font-bold text-gray-900">{services.length}</p>
+                                </div>
                             </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Tổng gói dịch vụ</p>
-                                <p className="text-2xl font-bold text-gray-900">{services.length}</p>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex items-center">
+                                <div className="p-2 bg-green-100 rounded-lg">
+                                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div className="ml-4">
+                                    <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
+                                    <p className="text-2xl font-bold text-gray-900">{services.filter(s => s.isActive).length}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex items-center">
+                                <div className="p-2 bg-yellow-100 rounded-lg">
+                                    <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                    </svg>
+                                </div>
+                                <div className="ml-4">
+                                    <p className="text-sm font-medium text-gray-600">Giá thấp nhất</p>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {services.filter(s => s.isActive).length > 0
+                                            ? formatPrice(Math.min(...services.filter(s => s.isActive).map(s => s.price)))
+                                            : '0'
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex items-center">
+                                <div className="p-2 bg-purple-100 rounded-lg">
+                                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                                <div className="ml-4">
+                                    <p className="text-sm font-medium text-gray-600">Giá cao nhất</p>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {services.filter(s => s.isActive).length > 0
+                                            ? formatPrice(Math.max(...services.filter(s => s.isActive).map(s => s.price)))
+                                            : '0'
+                                        }
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
+                )}
 
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-green-100 rounded-lg">
-                                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Đang hoạt động</p>
-                                <p className="text-2xl font-bold text-gray-900">{services.filter(s => s.isActive).length}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-yellow-100 rounded-lg">
-                                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Giá thấp nhất</p>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {formatPrice(Math.min(...services.filter(s => s.isActive).map(s => s.price)))}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <div className="flex items-center">
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
-                            </div>
-                            <div className="ml-4">
-                                <p className="text-sm font-medium text-gray-600">Giá cao nhất</p>
-                                <p className="text-2xl font-bold text-gray-900">
-                                    {formatPrice(Math.max(...services.filter(s => s.isActive).map(s => s.price)))}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Filter Section */}
+                {/* Search and Filter Section */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">Lọc theo phân loại</h3>
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                        {/* <h3 className="text-lg font-semibold text-gray-900">Tìm kiếm và lọc</h3> */}
+
+                        {/* Search Input */}
+                        {/* <div className="flex-1 max-w-md">
+                            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-2">
+                                tìm kiếm
+                            </label>
+                            <input
+                                type="text"
+                                id="search"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Tìm kiếm gói dịch vụ..."
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                            />
+                        </div> */}
+
+                        {/* Category Filter */}
                         <div className="flex items-center space-x-4">
                             {[
                                 { value: 'all', label: 'Tất cả' },
@@ -416,7 +455,7 @@ export default function ServicesPage() {
                 {/* Services Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredServices.map((service) => (
-                        <div key={service.id} className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300 ${!service.isActive ? 'opacity-60' : ''}`}>
+                        <div key={service._id} className={`bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300 ${!service.isActive ? 'opacity-60' : ''}`}>
                             <div className="p-6">
                                 {/* Service Header */}
                                 <div className="flex items-start justify-between mb-4">
@@ -464,7 +503,8 @@ export default function ServicesPage() {
                                     <div className="flex items-center space-x-2">
                                         <button
                                             onClick={() => handleEdit(service)}
-                                            className="text-blue-600 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-300"
+                                            disabled={loading}
+                                            className="text-blue-600 hover:text-blue-700 disabled:text-gray-400 p-2 hover:bg-blue-50 rounded-lg transition-colors duration-300"
                                             title="Chỉnh sửa"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -472,8 +512,9 @@ export default function ServicesPage() {
                                             </svg>
                                         </button>
                                         <button
-                                            onClick={() => handleToggleActive(service.id)}
-                                            className={`p-2 rounded-lg transition-colors duration-300 ${service.isActive ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50' : 'text-green-600 hover:text-green-700 hover:bg-green-50'}`}
+                                            onClick={() => handleToggleActive(service._id)}
+                                            disabled={loading}
+                                            className={`p-2 rounded-lg transition-colors duration-300 disabled:text-gray-400 ${service.isActive ? 'text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50' : 'text-green-600 hover:text-green-700 hover:bg-green-50'}`}
                                             title={service.isActive ? 'Tạm dừng' : 'Kích hoạt'}
                                         >
                                             {service.isActive ? (
@@ -487,8 +528,9 @@ export default function ServicesPage() {
                                             )}
                                         </button>
                                         <button
-                                            onClick={() => setDeleteConfirmId(service.id)}
-                                            className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors duration-300"
+                                            onClick={() => setDeleteConfirmId(service._id)}
+                                            disabled={loading}
+                                            className="text-red-600 hover:text-red-700 disabled:text-gray-400 p-2 hover:bg-red-50 rounded-lg transition-colors duration-300"
                                             title="Xóa"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -502,6 +544,23 @@ export default function ServicesPage() {
                     ))}
                 </div>
 
+                {/* Empty State */}
+                {!loading && services.length === 0 && (
+                    <div className="text-center py-12">
+                        <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h6m-6 4h6m-2 4h2" />
+                        </svg>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Chưa có gói dịch vụ nào</h3>
+                        <p className="text-gray-500 mb-4">Bắt đầu bằng cách thêm gói dịch vụ đầu tiên</p>
+                        <button
+                            onClick={handleAddNew}
+                            className="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300"
+                        >
+                            Thêm gói dịch vụ
+                        </button>
+                    </div>
+                )}
+
                 {/* Add/Edit Modal */}
                 {isModalOpen && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -513,7 +572,8 @@ export default function ServicesPage() {
                                 </h3>
                                 <button
                                     onClick={handleCloseModal}
-                                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                                    disabled={loading}
+                                    className="text-gray-400 hover:text-gray-600 disabled:text-gray-300 transition-colors"
                                 >
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -523,6 +583,18 @@ export default function ServicesPage() {
 
                             {/* Modal Body - Scrollable */}
                             <div className="flex-1 overflow-y-auto p-6">
+                                {/* Error message in modal */}
+                                {error && (
+                                    <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                                        <div className="flex">
+                                            <svg className="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            <span>{error}</span>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="space-y-6">
                                     {/* Service Name */}
                                     <div>
@@ -535,7 +607,8 @@ export default function ServicesPage() {
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                             required
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                                            disabled={loading}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 disabled:bg-gray-100"
                                             placeholder="Ví dụ: Gói Cơ Bản"
                                         />
                                     </div>
@@ -552,7 +625,8 @@ export default function ServicesPage() {
                                             onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                             required
                                             min="0"
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                                            disabled={loading}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 disabled:bg-gray-100"
                                             placeholder="15000000"
                                         />
                                     </div>
@@ -567,7 +641,8 @@ export default function ServicesPage() {
                                             value={formData.category}
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value as 'basic' | 'standard' | 'premium' | 'luxury' })}
                                             required
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                                            disabled={loading}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 disabled:bg-gray-100"
                                         >
                                             <option value="basic">Cơ Bản</option>
                                             <option value="standard">Tiêu Chuẩn</option>
@@ -587,7 +662,8 @@ export default function ServicesPage() {
                                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                             required
                                             rows={3}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                                            disabled={loading}
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 disabled:bg-gray-100"
                                             placeholder="Mô tả ngắn về gói dịch vụ"
                                         />
                                     </div>
@@ -603,14 +679,16 @@ export default function ServicesPage() {
                                                     type="text"
                                                     value={feature}
                                                     onChange={(e) => handleFeatureChange(index, e.target.value)}
-                                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
+                                                    disabled={loading}
+                                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500 disabled:bg-gray-100"
                                                     placeholder="Ví dụ: Trang trí sân khấu cơ bản"
                                                 />
                                                 {formData.features.length > 1 && (
                                                     <button
                                                         type="button"
                                                         onClick={() => handleRemoveFeature(index)}
-                                                        className="text-red-600 hover:text-red-700 p-2"
+                                                        disabled={loading}
+                                                        className="text-red-600 hover:text-red-700 disabled:text-gray-400 p-2"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -622,7 +700,8 @@ export default function ServicesPage() {
                                         <button
                                             type="button"
                                             onClick={handleAddFeature}
-                                            className="text-rose-600 hover:text-rose-700 text-sm font-medium flex items-center space-x-1"
+                                            disabled={loading}
+                                            className="text-rose-600 hover:text-rose-700 disabled:text-gray-400 text-sm font-medium flex items-center space-x-1"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -638,7 +717,8 @@ export default function ServicesPage() {
                                             id="isActive"
                                             checked={formData.isActive}
                                             onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                            className="w-4 h-4 text-rose-600 bg-gray-100 border-gray-300 rounded focus:ring-rose-500"
+                                            disabled={loading}
+                                            className="w-4 h-4 text-rose-600 bg-gray-100 border-gray-300 rounded focus:ring-rose-500 disabled:bg-gray-100"
                                         />
                                         <label htmlFor="isActive" className="ml-2 text-sm font-medium text-gray-700">
                                             Kích hoạt gói dịch vụ
@@ -652,16 +732,21 @@ export default function ServicesPage() {
                                 <button
                                     type="button"
                                     onClick={handleCloseModal}
-                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300"
+                                    disabled={loading}
+                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 transition-colors duration-300"
                                 >
                                     Hủy
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleSubmit}
-                                    className="px-6 py-3 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors duration-300"
+                                    disabled={loading}
+                                    className="px-6 py-3 bg-rose-600 text-white rounded-lg hover:bg-rose-700 disabled:bg-gray-400 transition-colors duration-300 flex items-center space-x-2"
                                 >
-                                    {editingService ? 'Cập nhật' : 'Thêm mới'}
+                                    {loading && (
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    )}
+                                    <span>{editingService ? 'Cập nhật' : 'Thêm mới'}</span>
                                 </button>
                             </div>
                         </div>
@@ -687,15 +772,20 @@ export default function ServicesPage() {
                                 <div className="flex items-center justify-end space-x-4">
                                     <button
                                         onClick={() => setDeleteConfirmId(null)}
-                                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300"
+                                        disabled={loading}
+                                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 transition-colors duration-300"
                                     >
                                         Hủy
                                     </button>
                                     <button
                                         onClick={() => handleDelete(deleteConfirmId)}
-                                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-300"
+                                        disabled={loading}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-colors duration-300 flex items-center space-x-2"
                                     >
-                                        Xóa
+                                        {loading && (
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        )}
+                                        <span>Xóa</span>
                                     </button>
                                 </div>
                             </div>
