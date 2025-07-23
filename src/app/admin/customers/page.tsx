@@ -27,8 +27,22 @@ export default function CustomersPage() {
     const [loading, setLoading] = useState(true);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+
+    // Form data for adding new customer
+    const [newCustomerForm, setNewCustomerForm] = useState({
+        fullName: '',
+        phone: '',
+        email: '',
+        weddingDate: '',
+        requirements: '',
+        guestCount: '',
+        budget: '',
+        venue: '',
+        notes: ''
+    });
 
     const statusOptions = [
         { value: 'all', label: 'Tất cả', color: 'gray' },
@@ -320,6 +334,63 @@ export default function CustomersPage() {
         setSelectedCustomer(null);
     };
 
+    // Handle opening add customer modal
+    const handleAddCustomer = () => {
+        setIsAddModalOpen(true);
+    };
+
+    // Handle closing add customer modal
+    const handleCloseAddModal = () => {
+        setIsAddModalOpen(false);
+        setNewCustomerForm({
+            fullName: '',
+            phone: '',
+            email: '',
+            weddingDate: '',
+            requirements: '',
+            guestCount: '',
+            budget: '',
+            venue: '',
+            notes: ''
+        });
+    };
+
+    // Handle form input changes
+    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setNewCustomerForm(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    // Handle adding new customer
+    const handleSubmitNewCustomer = () => {
+        // Validate required fields
+        if (!newCustomerForm.fullName.trim() || !newCustomerForm.phone.trim() || !newCustomerForm.email.trim()) {
+            alert('Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại, Email)');
+            return;
+        }
+
+        const newCustomer: Customer = {
+            id: Date.now().toString(),
+            fullName: newCustomerForm.fullName,
+            phone: newCustomerForm.phone,
+            email: newCustomerForm.email,
+            weddingDate: newCustomerForm.weddingDate,
+            requirements: newCustomerForm.requirements,
+            status: 'new',
+            createdAt: new Date().toISOString(),
+            guestCount: newCustomerForm.guestCount ? parseInt(newCustomerForm.guestCount) : undefined,
+            budget: newCustomerForm.budget || undefined,
+            venue: newCustomerForm.venue || undefined,
+            notes: newCustomerForm.notes || undefined
+        };
+
+        setCustomers(prev => [newCustomer, ...prev]);
+        handleCloseAddModal();
+    };
+
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('vi-VN');
     };
@@ -343,10 +414,19 @@ export default function CustomersPage() {
                         <h1 className="text-2xl font-bold text-gray-900">Khách hàng</h1>
                         <p className="text-gray-600">Quản lý yêu cầu tư vấn cưới từ khách hàng</p>
                     </div>
-                    <div className="mt-4 sm:mt-0">
+                    <div className="mt-4 sm:mt-0 flex items-center gap-3">
                         <span className="bg-rose-100 text-rose-800 text-sm font-medium px-3 py-1 rounded-full">
                             {filteredCustomers.length} khách hàng
                         </span>
+                        <button
+                            onClick={handleAddCustomer}
+                            className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            Thêm khách hàng
+                        </button>
                     </div>
                 </div>
 
@@ -566,8 +646,8 @@ export default function CustomersPage() {
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
                                             className={`px-3 py-1 border rounded-lg text-sm transition-colors duration-300 ${currentPage === page
-                                                    ? 'bg-rose-600 text-white border-rose-600'
-                                                    : 'border-gray-200 hover:bg-gray-50'
+                                                ? 'bg-rose-600 text-white border-rose-600'
+                                                : 'border-gray-200 hover:bg-gray-50'
                                                 }`}
                                         >
                                             {page}
@@ -609,6 +689,183 @@ export default function CustomersPage() {
                 onClose={handleCloseModal}
                 onStatusChange={handleStatusChange}
             />
+
+            {/* Add Customer Modal */}
+            {isAddModalOpen && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl">
+                        {/* Modal Header - Fixed */}
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h3 className="text-lg font-medium text-gray-900">Thêm khách hàng mới</h3>
+                            <button
+                                onClick={handleCloseAddModal}
+                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Modal Body - Scrollable */}
+                        <div className="flex-1 overflow-y-auto p-6">
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="fullName" className="block text-sm font-medium text-gray-700">
+                                            Họ và tên *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="fullName"
+                                            name="fullName"
+                                            value={newCustomerForm.fullName}
+                                            onChange={handleFormChange}
+                                            required
+                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-rose-500 focus:border-rose-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                                            Số điện thoại *
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            id="phone"
+                                            name="phone"
+                                            value={newCustomerForm.phone}
+                                            onChange={handleFormChange}
+                                            required
+                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-rose-500 focus:border-rose-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                                            Email *
+                                        </label>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            name="email"
+                                            value={newCustomerForm.email}
+                                            onChange={handleFormChange}
+                                            required
+                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-rose-500 focus:border-rose-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="weddingDate" className="block text-sm font-medium text-gray-700">
+                                            Ngày cưới dự kiến
+                                        </label>
+                                        <input
+                                            type="date"
+                                            id="weddingDate"
+                                            name="weddingDate"
+                                            value={newCustomerForm.weddingDate}
+                                            onChange={handleFormChange}
+                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-rose-500 focus:border-rose-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="guestCount" className="block text-sm font-medium text-gray-700">
+                                            Số lượng khách
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="guestCount"
+                                            name="guestCount"
+                                            value={newCustomerForm.guestCount}
+                                            onChange={handleFormChange}
+                                            min="1"
+                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-rose-500 focus:border-rose-500"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label htmlFor="budget" className="block text-sm font-medium text-gray-700">
+                                            Ngân sách (VNĐ)
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="budget"
+                                            name="budget"
+                                            value={newCustomerForm.budget}
+                                            onChange={handleFormChange}
+                                            min="0"
+                                            step="1000000"
+                                            className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-rose-500 focus:border-rose-500"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label htmlFor="venue" className="block text-sm font-medium text-gray-700">
+                                        Địa điểm tổ chức
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="venue"
+                                        name="venue"
+                                        value={newCustomerForm.venue}
+                                        onChange={handleFormChange}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-rose-500 focus:border-rose-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="requirements" className="block text-sm font-medium text-gray-700">
+                                        Yêu cầu dịch vụ
+                                    </label>
+                                    <textarea
+                                        id="requirements"
+                                        name="requirements"
+                                        value={newCustomerForm.requirements}
+                                        onChange={handleFormChange}
+                                        rows={3}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-rose-500 focus:border-rose-500"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                                        Ghi chú
+                                    </label>
+                                    <textarea
+                                        id="notes"
+                                        name="notes"
+                                        value={newCustomerForm.notes}
+                                        onChange={handleFormChange}
+                                        rows={2}
+                                        className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-rose-500 focus:border-rose-500"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer - Fixed */}
+                        <div className="flex justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+                            <button
+                                type="button"
+                                onClick={handleCloseAddModal}
+                                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleSubmitNewCustomer}
+                                className="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition-colors duration-200"
+                            >
+                                Thêm khách hàng
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }
