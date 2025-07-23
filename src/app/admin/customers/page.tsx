@@ -21,15 +21,19 @@ interface Customer {
 
 export default function CustomersPage() {
     const [customers, setCustomers] = useState<Customer[]>([]);
-    const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([]);
     const [selectedStatus, setSelectedStatus] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
+
+    // Pagination info from API
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
 
     // Form data for adding new customer
     const [newCustomerForm, setNewCustomerForm] = useState({
@@ -66,262 +70,91 @@ export default function CustomersPage() {
         return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
     };
 
-    // Mock data - replace with actual API call
-    useEffect(() => {
-        const mockCustomers: Customer[] = [
-            {
-                id: '1',
-                fullName: 'Nguyễn Văn An',
-                phone: '0123456789',
-                email: 'an.nguyen@email.com',
-                weddingDate: '2025-08-15',
-                requirements: 'Cưới ngoài trời, khoảng 200 khách, muốn có không gian xanh mát',
-                status: 'new',
-                createdAt: '2025-07-20T10:30:00',
-                guestCount: 200,
-                budget: '150-200 triệu VND',
-                venue: 'Sân vườn ngoại thành',
-                notes: 'Khách hàng có vẻ nghiêm túc, cần liên hệ trong tuần này'
-            },
-            {
-                id: '2',
-                fullName: 'Trần Thị Bình',
-                phone: '0987654321',
-                email: 'binh.tran@gmail.com',
-                weddingDate: '2025-09-20',
-                requirements: 'Gói cưới cao cấp, muốn trang trí hoa hồng, phong cách cổ điển',
-                status: 'deposited',
-                createdAt: '2025-07-18T14:15:00',
-                guestCount: 120,
-                budget: '250-300 triệu VND',
-                venue: 'Nhà hàng tiệc cưới',
-                notes: 'Đã đặt cọc 50 triệu VND, cần hoàn thiện hợp đồng'
-            },
-            {
-                id: '3',
-                fullName: 'Lê Minh Cường',
-                phone: '0369258147',
-                email: 'cuong.le@company.com',
-                weddingDate: '2025-10-10',
-                requirements: 'Cưới trong nhà, 150 khách, phong cách hiện đại, tông màu trắng vàng',
-                status: 'in_progress',
-                createdAt: '2025-07-15T09:45:00',
-                guestCount: 150,
-                budget: '180-220 triệu VND',
-                venue: 'Khách sạn 5 sao',
-                notes: 'Đang thảo luận chi tiết dịch vụ, khách hàng rất hài lòng'
-            },
-            {
-                id: '4',
-                fullName: 'Phạm Thị Dung',
-                phone: '0741852963',
-                email: 'dung.pham@email.com',
-                weddingDate: '2025-07-30',
-                requirements: 'Cưới gấp, cần tư vấn ngay, tổ chức đơn giản nhưng đẹp',
-                status: 'completed',
-                createdAt: '2025-07-10T16:20:00',
-                guestCount: 80,
-                budget: '100-120 triệu VND',
-                venue: 'Nhà riêng',
-                notes: 'Đã hoàn thành, khách hàng rất hài lòng với dịch vụ'
-            },
-            {
-                id: '5',
-                fullName: 'Hoàng Văn Em',
-                phone: '0159753486',
-                email: 'em.hoang@gmail.com',
-                weddingDate: '2025-12-25',
-                requirements: 'Cưới Giáng sinh, trang trí màu đỏ trắng, không gian ấm cúng',
-                status: 'new',
-                createdAt: '2025-07-22T11:10:00',
-                guestCount: 100,
-                budget: '120-150 triệu VND',
-                venue: 'Chưa xác định',
-                notes: 'Vừa mới liên hệ, cần gọi lại để tư vấn chi tiết'
-            },
-            {
-                id: '6',
-                fullName: 'Đỗ Thị Lan',
-                phone: '0234567890',
-                email: 'lan.do@email.com',
-                weddingDate: '2025-11-15',
-                requirements: 'Cưới theo phong cách vintage, muốn chụp ảnh cưới đẹp',
-                status: 'contacted',
-                createdAt: '2025-07-21T16:30:00',
-                guestCount: 180,
-                budget: '200-250 triệu VND',
-                venue: 'Resort biển',
-                notes: 'Đã liên hệ, đang chờ phản hồi về báo giá'
-            },
-            {
-                id: '7',
-                fullName: 'Vũ Minh Đức',
-                phone: '0345678901',
-                email: 'duc.vu@company.vn',
-                weddingDate: '2026-01-20',
-                requirements: 'Tiệc cưới sang trọng, phong cách châu Âu, nhiều hoa tươi',
-                status: 'in_progress',
-                createdAt: '2025-07-19T13:20:00',
-                guestCount: 250,
-                budget: '300-400 triệu VND',
-                venue: 'Khách sạn hạng sang',
-                notes: 'Đang thực hiện các bước chuẩn bị, khách rất hài lòng'
-            },
-            {
-                id: '8',
-                fullName: 'Bùi Thị Hoa',
-                phone: '0456789012',
-                email: 'hoa.bui@gmail.com',
-                weddingDate: '2025-09-05',
-                requirements: 'Cưới đơn giản, gia đình nhỏ, muốn trang trí tối giản',
-                status: 'completed',
-                createdAt: '2025-07-12T08:15:00',
-                guestCount: 60,
-                budget: '80-100 triệu VND',
-                venue: 'Nhà hàng nhỏ',
-                notes: 'Đã hoàn thành thành công, khách hàng giới thiệu thêm bạn bè'
-            },
-            {
-                id: '9',
-                fullName: 'Ngô Văn Tùng',
-                phone: '0567890123',
-                email: 'tung.ngo@email.com',
-                weddingDate: '2025-10-30',
-                requirements: 'Cưới Halloween theme, muốn có không gian độc đáo',
-                status: 'cancelled',
-                createdAt: '2025-07-16T12:45:00',
-                guestCount: 120,
-                budget: '150-180 triệu VND',
-                venue: 'Không xác định',
-                notes: 'Khách hàng hủy do thay đổi kế hoạch cá nhân'
-            },
-            {
-                id: '10',
-                fullName: 'Lý Thị Mai',
-                phone: '0678901234',
-                email: 'mai.ly@company.com',
-                weddingDate: '2025-12-31',
-                requirements: 'Cưới cuối năm, pháo hoa, không gian lễ hội',
-                status: 'deposited',
-                createdAt: '2025-07-20T15:00:00',
-                guestCount: 300,
-                budget: '500-600 triệu VND',
-                venue: 'Sân khấu ngoài trời',
-                notes: 'Đặt cọc 100 triệu, yêu cầu cao về chất lượng dịch vụ'
-            },
-            {
-                id: '11',
-                fullName: 'Trịnh Văn Hải',
-                phone: '0789012345',
-                email: 'hai.trinh@email.com',
-                weddingDate: '2026-02-14',
-                requirements: 'Cưới Valentine, trang trí hoa hồng đỏ, lãng mạn',
-                status: 'new',
-                createdAt: '2025-07-22T09:30:00',
-                guestCount: 150,
-                budget: '200-250 triệu VND',
-                venue: 'Chưa quyết định',
-                notes: 'Khách hàng mới liên hệ hôm nay'
-            },
-            {
-                id: '12',
-                fullName: 'Phan Thị Thu',
-                phone: '0890123456',
-                email: 'thu.phan@gmail.com',
-                weddingDate: '2025-08-28',
-                requirements: 'Cưới theo phong cách truyền thống, áo dài, lễ gia tiên',
-                status: 'contacted',
-                createdAt: '2025-07-17T14:20:00',
-                guestCount: 200,
-                budget: '180-220 triệu VND',
-                venue: 'Nhà thờ họ',
-                notes: 'Đã trao đổi qua điện thoại, sẽ hẹn gặp tuần sau'
-            },
-            {
-                id: '13',
-                fullName: 'Đinh Minh Quân',
-                phone: '0901234567',
-                email: 'quan.dinh@company.vn',
-                weddingDate: '2025-11-11',
-                requirements: 'Cưới ngày lễ độc thân, muốn có concept vui nhộn',
-                status: 'in_progress',
-                createdAt: '2025-07-14T11:40:00',
-                guestCount: 180,
-                budget: '220-280 triệu VND',
-                venue: 'Resort trong thành phố',
-                notes: 'Đang hoàn thiện kế hoạch chi tiết, khách hàng tích cực hợp tác'
-            },
-            {
-                id: '14',
-                fullName: 'Võ Thị Ngọc',
-                phone: '0012345678',
-                email: 'ngoc.vo@email.com',
-                weddingDate: '2025-09-15',
-                requirements: 'Cưới mùa thu, trang trí lá vàng, không gian ấm áp',
-                status: 'completed',
-                createdAt: '2025-07-08T16:50:00',
-                guestCount: 140,
-                budget: '160-190 triệu VND',
-                venue: 'Vườn cây cổ thụ',
-                notes: 'Hoàn thành xuất sắc, nhận được nhiều lời khen từ khách mời'
-            },
-            {
-                id: '15',
-                fullName: 'Huỳnh Văn Phúc',
-                phone: '0123456780',
-                email: 'phuc.huynh@gmail.com',
-                weddingDate: '2026-03-08',
-                requirements: 'Cưới ngày 8/3, tôn vinh phái đẹp, nhiều hoa tươi',
-                status: 'new',
-                createdAt: '2025-07-22T10:15:00',
-                guestCount: 160,
-                budget: '170-210 triệu VND',
-                venue: 'Chưa chọn',
-                notes: 'Vừa mới gọi tư vấn, cần hẹn lịch gặp mặt'
-            },
-        ];
+    // Fetch customers from API with pagination and filtering
+    const fetchCustomers = async () => {
+        try {
+            setLoading(true);
 
-        setTimeout(() => {
-            setCustomers(mockCustomers);
-            setFilteredCustomers(mockCustomers);
+            // Build query parameters
+            const params = new URLSearchParams({
+                page: currentPage.toString(),
+                limit: itemsPerPage.toString(),
+            });
+
+            // Add filters if they exist
+            if (selectedStatus !== 'all') {
+                params.append('status', selectedStatus);
+            }
+
+            if (debouncedSearchTerm.trim()) {
+                params.append('search', debouncedSearchTerm.trim());
+            }
+
+            const response = await fetch(`/api/customers?${params.toString()}`);
+            const result = await response.json();
+
+            if (result.success) {
+                // Convert MongoDB _id to id for frontend compatibility
+                const customersWithId = result.data.map((customer: any) => ({
+                    ...customer,
+                    id: customer._id,
+                }));
+
+                setCustomers(customersWithId);
+                setTotalPages(result.pagination.totalPages);
+                setTotalCount(result.pagination.totalCount);
+            } else {
+                console.error('Failed to fetch customers:', result.error);
+                alert('Không thể tải danh sách khách hàng. Vui lòng thử lại!');
+            }
+        } catch (error) {
+            console.error('Error fetching customers:', error);
+            alert('Lỗi kết nối. Vui lòng kiểm tra internet và thử lại!');
+        } finally {
             setLoading(false);
-        }, 1000);
-    }, []);
+        }
+    };
 
+    // Fetch customers when page, filters, or search changes
     useEffect(() => {
-        let filtered = customers;
+        fetchCustomers();
+    }, [currentPage, itemsPerPage, selectedStatus, debouncedSearchTerm]);
 
-        // Filter by status
-        if (selectedStatus !== 'all') {
-            filtered = filtered.filter(customer => customer.status === selectedStatus);
+    // Reset to first page when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedStatus, debouncedSearchTerm, itemsPerPage]);    // Debounce search term
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    const handleStatusChange = async (customerId: string, newStatus: string) => {
+        try {
+            const response = await fetch(`/api/customers/${customerId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: newStatus }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Refresh the customer list to get updated data
+                fetchCustomers();
+            } else {
+                console.error('Failed to update customer status:', result.error);
+                alert('Không thể cập nhật trạng thái. Vui lòng thử lại!');
+            }
+        } catch (error) {
+            console.error('Error updating customer status:', error);
+            alert('Lỗi kết nối. Vui lòng kiểm tra internet và thử lại!');
         }
-
-        // Filter by search term
-        if (searchTerm) {
-            filtered = filtered.filter(customer =>
-                customer.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                customer.phone.includes(searchTerm)
-            );
-        }
-
-        setFilteredCustomers(filtered);
-        setCurrentPage(1); // Reset to first page when filters change
-    }, [customers, selectedStatus, searchTerm, itemsPerPage]);
-
-    // Calculate pagination
-    const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex);
-
-    const handleStatusChange = (customerId: string, newStatus: string) => {
-        setCustomers(prev =>
-            prev.map(customer =>
-                customer.id === customerId
-                    ? { ...customer, status: newStatus as Customer['status'] }
-                    : customer
-            )
-        );
     };
 
     const handleViewDetails = (customer: Customer) => {
@@ -365,30 +198,49 @@ export default function CustomersPage() {
     };
 
     // Handle adding new customer
-    const handleSubmitNewCustomer = () => {
+    const handleSubmitNewCustomer = async () => {
         // Validate required fields
         if (!newCustomerForm.fullName.trim() || !newCustomerForm.phone.trim() || !newCustomerForm.email.trim()) {
             alert('Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Số điện thoại, Email)');
             return;
         }
 
-        const newCustomer: Customer = {
-            id: Date.now().toString(),
-            fullName: newCustomerForm.fullName,
-            phone: newCustomerForm.phone,
-            email: newCustomerForm.email,
-            weddingDate: newCustomerForm.weddingDate,
-            requirements: newCustomerForm.requirements,
-            status: 'new',
-            createdAt: new Date().toISOString(),
-            guestCount: newCustomerForm.guestCount ? parseInt(newCustomerForm.guestCount) : undefined,
-            budget: newCustomerForm.budget || undefined,
-            venue: newCustomerForm.venue || undefined,
-            notes: newCustomerForm.notes || undefined
-        };
+        try {
+            const newCustomerData = {
+                fullName: newCustomerForm.fullName,
+                phone: newCustomerForm.phone,
+                email: newCustomerForm.email,
+                weddingDate: newCustomerForm.weddingDate,
+                requirements: newCustomerForm.requirements,
+                guestCount: newCustomerForm.guestCount ? parseInt(newCustomerForm.guestCount) : undefined,
+                budget: newCustomerForm.budget || undefined,
+                venue: newCustomerForm.venue || undefined,
+                notes: newCustomerForm.notes || undefined
+            };
 
-        setCustomers(prev => [newCustomer, ...prev]);
-        handleCloseAddModal();
+            const response = await fetch('/api/customers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newCustomerData),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                handleCloseAddModal();
+                alert('Thêm khách hàng thành công!');
+                // Refresh the customer list
+                fetchCustomers();
+            } else {
+                console.error('Failed to create customer:', result.error);
+                alert('Không thể thêm khách hàng. Vui lòng thử lại!');
+            }
+        } catch (error) {
+            console.error('Error creating customer:', error);
+            alert('Lỗi kết nối. Vui lòng kiểm tra internet và thử lại!');
+        }
     };
 
     const formatDate = (dateString: string) => {
@@ -416,7 +268,7 @@ export default function CustomersPage() {
                     </div>
                     <div className="mt-4 sm:mt-0 flex items-center gap-3">
                         <span className="bg-rose-100 text-rose-800 text-sm font-medium px-3 py-1 rounded-full">
-                            {filteredCustomers.length} khách hàng
+                            {totalCount} khách hàng
                         </span>
                         <button
                             onClick={handleAddCustomer}
@@ -499,9 +351,9 @@ export default function CustomersPage() {
                                 Danh sách khách hàng
                             </h3>
                             <div className="text-sm text-gray-600">
-                                {filteredCustomers.length > 0 && (
+                                {totalCount > 0 && (
                                     <span>
-                                        Hiển thị {startIndex + 1} - {Math.min(endIndex, filteredCustomers.length)} của {filteredCustomers.length} khách hàng
+                                        Hiển thị {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalCount)} của {totalCount} khách hàng
                                     </span>
                                 )}
                             </div>
@@ -539,14 +391,14 @@ export default function CustomersPage() {
                                             <p className="mt-2">Đang tải...</p>
                                         </td>
                                     </tr>
-                                ) : paginatedCustomers.length === 0 ? (
+                                ) : customers.length === 0 ? (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                                             Không tìm thấy khách hàng nào
                                         </td>
                                     </tr>
                                 ) : (
-                                    paginatedCustomers.map((customer) => (
+                                    customers.map((customer: Customer) => (
                                         <tr key={customer.id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div>
@@ -609,7 +461,7 @@ export default function CustomersPage() {
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 px-6 py-4">
                         <div className="flex items-center justify-between">
                             <div className="text-sm text-gray-600">
-                                Hiển thị {startIndex + 1} - {Math.min(endIndex, filteredCustomers.length)} trong {filteredCustomers.length} khách hàng
+                                Hiển thị {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalCount)} trong {totalCount} khách hàng
                             </div>
                             <div className="flex space-x-2">
                                 {/* Previous Button */}
@@ -668,7 +520,7 @@ export default function CustomersPage() {
                     </div>
                 )}
 
-                {/* Stats Summary */}
+                {/* Stats Summary (Current Page) */}
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {statusOptions.slice(1).map((status) => {
                         const count = customers.filter(c => c.status === status.value).length;
@@ -676,6 +528,7 @@ export default function CustomersPage() {
                             <div key={status.value} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
                                 <div className="text-2xl font-bold text-gray-900">{count}</div>
                                 <div className="text-sm text-gray-600">{status.label}</div>
+                                <div className="text-xs text-gray-400 mt-1">Trang hiện tại</div>
                             </div>
                         );
                     })}

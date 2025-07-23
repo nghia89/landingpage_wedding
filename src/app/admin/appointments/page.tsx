@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 
-// Appointment interface
+// Appointment interface (using _id for MongoDB)
 interface Appointment {
-    id: string;
+    _id: string;
     customerName: string;
     customerPhone: string;
     customerEmail?: string;
@@ -40,11 +40,14 @@ export default function AppointmentsPage() {
     const [typeFilter, setTypeFilter] = useState<string>('all');
     const [dateFilter, setDateFilter] = useState<string>('');
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
     const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState<AppointmentFormData>({
         customerName: '',
         customerPhone: '',
@@ -57,135 +60,119 @@ export default function AppointmentsPage() {
         notes: ''
     });
 
-    // Mock appointment data
-    const mockAppointments: Appointment[] = [
-        {
-            id: '1',
-            customerName: 'Nguyễn Văn An & Trần Thị Bình',
-            customerPhone: '0901234567',
-            customerEmail: 'anvantran@email.com',
-            appointmentDate: '2025-07-25',
-            appointmentTime: '09:00',
-            duration: 90,
-            type: 'consultation',
-            status: 'confirmed',
-            notes: 'Cặp đôi muốn tư vấn gói cưới cao cấp, ngân sách 50 triệu',
-            location: 'Showroom chính',
-            createdAt: '2025-07-23T08:00:00',
-            updatedAt: '2025-07-23T08:00:00'
-        },
-        {
-            id: '2',
-            customerName: 'Lê Minh Châu & Phạm Thị Dung',
-            customerPhone: '0912345678',
-            customerEmail: 'chaudung@email.com',
-            appointmentDate: '2025-07-25',
-            appointmentTime: '14:00',
-            duration: 60,
-            type: 'venue_visit',
-            status: 'scheduled',
-            notes: 'Khách muốn xem trực tiếp không gian tổ chức tiệc',
-            location: 'Địa điểm tổ chức - Royal Palace',
-            createdAt: '2025-07-23T09:30:00',
-            updatedAt: '2025-07-23T09:30:00'
-        },
-        {
-            id: '3',
-            customerName: 'Hoàng Văn Em & Ngô Thị Phương',
-            customerPhone: '0923456789',
-            customerEmail: 'emphuong@email.com',
-            appointmentDate: '2025-07-26',
-            appointmentTime: '10:30',
-            duration: 120,
-            type: 'contract_signing',
-            status: 'confirmed',
-            notes: 'Ký hợp đồng gói Premium, cần chuẩn bị đầy đủ giấy tờ',
-            location: 'Showroom chính',
-            createdAt: '2025-07-23T10:15:00',
-            updatedAt: '2025-07-23T10:15:00'
-        },
-        {
-            id: '4',
-            customerName: 'Trương Minh Giang & Lý Thị Hoa',
-            customerPhone: '0934567890',
-            appointmentDate: '2025-07-24',
-            appointmentTime: '16:00',
-            duration: 45,
-            type: 'follow_up',
-            status: 'completed',
-            notes: 'Theo dõi tiến độ chuẩn bị đám cưới, cập nhật thay đổi',
-            location: 'Online - Zoom',
-            createdAt: '2025-07-22T14:00:00',
-            updatedAt: '2025-07-24T16:45:00'
-        },
-        {
-            id: '5',
-            customerName: 'Đặng Văn Khoa & Bùi Thị Lan',
-            customerPhone: '0945678901',
-            customerEmail: 'khoalan@email.com',
-            appointmentDate: '2025-07-24',
-            appointmentTime: '11:00',
-            duration: 90,
-            type: 'consultation',
-            status: 'no_show',
-            notes: 'Khách không đến theo lịch hẹn, cần liên hệ lại',
-            location: 'Showroom chính',
-            createdAt: '2025-07-23T08:30:00',
-            updatedAt: '2025-07-24T11:30:00'
-        },
-        {
-            id: '6',
-            customerName: 'Vũ Văn Minh & Đỗ Thị Nga',
-            customerPhone: '0956789012',
-            appointmentDate: '2025-07-27',
-            appointmentTime: '15:30',
-            duration: 60,
-            type: 'consultation',
-            status: 'scheduled',
-            notes: 'Tư vấn gói cưới truyền thống, ngân sách 30 triệu',
-            location: 'Showroom chính',
-            createdAt: '2025-07-23T11:00:00',
-            updatedAt: '2025-07-23T11:00:00'
-        }
-    ];
+    // API functions
+    const fetchAppointments = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams();
+            if (statusFilter !== 'all') params.append('status', statusFilter);
+            if (typeFilter !== 'all') params.append('type', typeFilter);
+            if (dateFilter) params.append('date', dateFilter);
+            if (debouncedSearchQuery.trim()) params.append('search', debouncedSearchQuery.trim());
 
+            const response = await fetch(`/api/appointments?${params.toString()}`);
+            const result = await response.json();
+
+            if (result.success) {
+                setAppointments(result.data);
+                setFilteredAppointments(result.data);
+            } else {
+                throw new Error(result.error || 'Failed to fetch appointments');
+            }
+        } catch (error) {
+            console.error('Error fetching appointments:', error);
+            setError(error instanceof Error ? error.message : 'Failed to load appointments');
+        } finally {
+            setLoading(false);
+        }
+    }, [statusFilter, typeFilter, dateFilter, debouncedSearchQuery]);
+
+    const createAppointment = async (appointmentData: AppointmentFormData) => {
+        try {
+            const response = await fetch('/api/appointments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(appointmentData),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                await fetchAppointments(); // Refresh the list
+                return result.data;
+            } else {
+                throw new Error(result.error || 'Failed to create appointment');
+            }
+        } catch (error) {
+            console.error('Error creating appointment:', error);
+            throw error;
+        }
+    };
+
+    const updateAppointment = async (id: string, appointmentData: Partial<Appointment>) => {
+        try {
+            const response = await fetch(`/api/appointments/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(appointmentData),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                await fetchAppointments(); // Refresh the list
+                return result.data;
+            } else {
+                throw new Error(result.error || 'Failed to update appointment');
+            }
+        } catch (error) {
+            console.error('Error updating appointment:', error);
+            throw error;
+        }
+    };
+
+    const deleteAppointment = async (id: string) => {
+        try {
+            const response = await fetch(`/api/appointments/${id}`, {
+                method: 'DELETE',
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                await fetchAppointments(); // Refresh the list
+            } else {
+                throw new Error(result.error || 'Failed to delete appointment');
+            }
+        } catch (error) {
+            console.error('Error deleting appointment:', error);
+            throw error;
+        }
+    };
+
+    // Load appointments on mount and when filters change
     useEffect(() => {
-        // Load appointments (in real app, this would be an API call)
-        setAppointments(mockAppointments);
-        setFilteredAppointments(mockAppointments);
-    }, []);
+        fetchAppointments();
+    }, [fetchAppointments]);
 
-    // Filter appointments
+    // Debounce search query
     useEffect(() => {
-        let filtered = appointments;
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 500);
 
-        // Filter by status
-        if (statusFilter !== 'all') {
-            filtered = filtered.filter(appointment => appointment.status === statusFilter);
-        }
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
-        // Filter by type
-        if (typeFilter !== 'all') {
-            filtered = filtered.filter(appointment => appointment.type === typeFilter);
-        }
-
-        // Filter by date
-        if (dateFilter) {
-            filtered = filtered.filter(appointment => appointment.appointmentDate === dateFilter);
-        }
-
-        // Filter by search query
-        if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(appointment =>
-                appointment.customerName.toLowerCase().includes(query) ||
-                appointment.customerPhone.includes(query) ||
-                appointment.customerEmail?.toLowerCase().includes(query)
-            );
-        }
-
-        setFilteredAppointments(filtered);
-    }, [appointments, statusFilter, typeFilter, dateFilter, searchQuery]);
+    // Client-side filtering is no longer needed as API handles it
+    useEffect(() => {
+        setFilteredAppointments(appointments);
+    }, [appointments]);
 
     // Format date and time
     const formatDateTime = (date: string, time: string) => {
@@ -230,7 +217,7 @@ export default function AppointmentsPage() {
     };
 
     // Handle form submission
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         // Validate required fields
         if (!formData.customerName.trim() || !formData.customerPhone.trim() ||
             !formData.appointmentDate || !formData.appointmentTime) {
@@ -238,33 +225,21 @@ export default function AppointmentsPage() {
             return;
         }
 
-        const newAppointment: Appointment = {
-            id: editingAppointment ? editingAppointment.id : Date.now().toString(),
-            customerName: formData.customerName,
-            customerPhone: formData.customerPhone,
-            customerEmail: formData.customerEmail || undefined,
-            appointmentDate: formData.appointmentDate,
-            appointmentTime: formData.appointmentTime,
-            duration: formData.duration,
-            type: formData.type,
-            status: 'scheduled',
-            notes: formData.notes || undefined,
-            location: formData.location,
-            createdAt: editingAppointment ? editingAppointment.createdAt : new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-
-        if (editingAppointment) {
-            // Update existing appointment
-            setAppointments(appointments.map(appointment =>
-                appointment.id === editingAppointment.id ? { ...newAppointment, status: editingAppointment.status } : appointment
-            ));
-        } else {
-            // Add new appointment
-            setAppointments([newAppointment, ...appointments]);
+        setLoading(true);
+        try {
+            if (editingAppointment) {
+                // Update existing appointment
+                await updateAppointment(editingAppointment._id, formData);
+            } else {
+                // Create new appointment
+                await createAppointment(formData);
+            }
+            handleCloseModal();
+        } catch (error) {
+            alert(error instanceof Error ? error.message : 'Có lỗi xảy ra');
+        } finally {
+            setLoading(false);
         }
-
-        handleCloseModal();
     };
 
     // Handle opening modal for new appointment
@@ -308,16 +283,28 @@ export default function AppointmentsPage() {
     };
 
     // Handle delete
-    const handleDelete = (id: string) => {
-        setAppointments(appointments.filter(appointment => appointment.id !== id));
-        setDeleteConfirmId(null);
+    const handleDelete = async (id: string) => {
+        setLoading(true);
+        try {
+            await deleteAppointment(id);
+            setDeleteConfirmId(null);
+        } catch (error) {
+            alert(error instanceof Error ? error.message : 'Có lỗi xảy ra khi xóa');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Handle status change
-    const handleStatusChange = (id: string, newStatus: string) => {
-        setAppointments(appointments.map(appointment =>
-            appointment.id === id ? { ...appointment, status: newStatus as any, updatedAt: new Date().toISOString() } : appointment
-        ));
+    const handleStatusChange = async (id: string, newStatus: string) => {
+        setLoading(true);
+        try {
+            await updateAppointment(id, { status: newStatus as any });
+        } catch (error) {
+            alert(error instanceof Error ? error.message : 'Có lỗi xảy ra khi cập nhật trạng thái');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Handle view details
@@ -342,14 +329,44 @@ export default function AppointmentsPage() {
                     </div>
                     <button
                         onClick={handleAddNew}
-                        className="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300 flex items-center space-x-2"
+                        disabled={loading}
+                        className="bg-rose-600 hover:bg-rose-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300 flex items-center space-x-2"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                         </svg>
-                        <span>Thêm lịch hẹn</span>
+                        <span>{loading ? 'Đang xử lý...' : 'Thêm lịch hẹn'}</span>
                     </button>
                 </div>
+
+                {/* Error Message */}
+                {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                        <div className="flex">
+                            <svg className="w-5 h-5 text-red-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <h3 className="text-sm font-medium text-red-800">Có lỗi xảy ra</h3>
+                                <p className="text-sm text-red-700 mt-1">{error}</p>
+                                <button
+                                    onClick={fetchAppointments}
+                                    className="text-sm text-red-600 hover:text-red-500 mt-2 underline"
+                                >
+                                    Thử lại
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Loading State */}
+                {loading && (
+                    <div className="text-center py-8">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600"></div>
+                        <p className="text-gray-600 mt-2">Đang tải...</p>
+                    </div>
+                )}
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
@@ -529,7 +546,7 @@ export default function AppointmentsPage() {
                                 {filteredAppointments.map((appointment) => {
                                     const dateTime = formatDateTime(appointment.appointmentDate, appointment.appointmentTime);
                                     return (
-                                        <tr key={appointment.id} className="hover:bg-gray-50">
+                                        <tr key={appointment._id} className="hover:bg-gray-50">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div>
                                                     <div className="text-sm font-medium text-gray-900">
@@ -561,8 +578,9 @@ export default function AppointmentsPage() {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <select
                                                     value={appointment.status}
-                                                    onChange={(e) => handleStatusChange(appointment.id, e.target.value)}
-                                                    className={`text-xs font-medium rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-rose-500 ${getStatusDisplay(appointment.status).color}`}
+                                                    onChange={(e) => handleStatusChange(appointment._id, e.target.value)}
+                                                    disabled={loading}
+                                                    className={`text-xs font-medium rounded-full px-2 py-1 border-0 focus:ring-2 focus:ring-rose-500 disabled:opacity-50 ${getStatusDisplay(appointment.status).color}`}
                                                 >
                                                     <option value="scheduled">Đã lên lịch</option>
                                                     <option value="confirmed">Đã xác nhận</option>
@@ -575,7 +593,8 @@ export default function AppointmentsPage() {
                                                 <div className="flex items-center space-x-2">
                                                     <button
                                                         onClick={() => handleViewDetails(appointment)}
-                                                        className="text-indigo-600 hover:text-indigo-900 p-2 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                        disabled={loading}
+                                                        className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50 p-2 hover:bg-indigo-50 rounded-lg transition-colors"
                                                         title="Xem chi tiết"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -585,7 +604,8 @@ export default function AppointmentsPage() {
                                                     </button>
                                                     <button
                                                         onClick={() => handleEdit(appointment)}
-                                                        className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        disabled={loading}
+                                                        className="text-blue-600 hover:text-blue-900 disabled:opacity-50 p-2 hover:bg-blue-50 rounded-lg transition-colors"
                                                         title="Chỉnh sửa"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -593,8 +613,9 @@ export default function AppointmentsPage() {
                                                         </svg>
                                                     </button>
                                                     <button
-                                                        onClick={() => setDeleteConfirmId(appointment.id)}
-                                                        className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                                                        onClick={() => setDeleteConfirmId(appointment._id)}
+                                                        disabled={loading}
+                                                        className="text-red-600 hover:text-red-900 disabled:opacity-50 p-2 hover:bg-red-50 rounded-lg transition-colors"
                                                         title="Xóa"
                                                     >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -794,16 +815,21 @@ export default function AppointmentsPage() {
                                 <button
                                     type="button"
                                     onClick={handleCloseModal}
-                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300"
+                                    disabled={loading}
+                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors duration-300"
                                 >
                                     Hủy
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleSubmit}
-                                    className="px-6 py-3 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors duration-300"
+                                    disabled={loading}
+                                    className="px-6 py-3 bg-rose-600 text-white rounded-lg hover:bg-rose-700 disabled:bg-gray-400 transition-colors duration-300 flex items-center space-x-2"
                                 >
-                                    {editingAppointment ? 'Cập nhật' : 'Thêm mới'}
+                                    {loading && (
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    )}
+                                    <span>{loading ? 'Đang xử lý...' : (editingAppointment ? 'Cập nhật' : 'Thêm mới')}</span>
                                 </button>
                             </div>
                         </div>
@@ -951,15 +977,20 @@ export default function AppointmentsPage() {
                                 <div className="flex items-center justify-end space-x-4">
                                     <button
                                         onClick={() => setDeleteConfirmId(null)}
-                                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-300"
+                                        disabled={loading}
+                                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors duration-300"
                                     >
                                         Hủy
                                     </button>
                                     <button
-                                        onClick={() => handleDelete(deleteConfirmId)}
-                                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-300"
+                                        onClick={() => handleDelete(deleteConfirmId!)}
+                                        disabled={loading}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-400 transition-colors duration-300 flex items-center space-x-2"
                                     >
-                                        Xóa
+                                        {loading && (
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        )}
+                                        <span>{loading ? 'Đang xóa...' : 'Xóa'}</span>
                                     </button>
                                 </div>
                             </div>
