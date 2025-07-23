@@ -18,6 +18,16 @@ interface Booking {
     createdAt: string;
 }
 
+// Form data interface for booking
+interface BookingFormData {
+    customerName: string;
+    phone: string;
+    consultationDate: string;
+    consultationTime: string;
+    requirements: string;
+    status: BookingStatus;
+}
+
 // Mock booking data
 const mockBookings: Booking[] = [
     {
@@ -182,14 +192,25 @@ const statusOptions: { value: BookingStatus | 'all'; label: string; color: strin
 ];
 
 export default function BookingsPage() {
+    const [bookings, setBookings] = useState<Booking[]>(mockBookings);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<BookingStatus | 'all'>('all');
     const [currentPage, setCurrentPage] = useState(1);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+    const [formData, setFormData] = useState<BookingFormData>({
+        customerName: '',
+        phone: '',
+        consultationDate: '',
+        consultationTime: '',
+        requirements: '',
+        status: 'pending'
+    });
     const itemsPerPage = 10;
 
     // Filter bookings based on search term and status
     const filteredBookings = useMemo(() => {
-        let filtered = mockBookings;
+        let filtered = bookings;
 
         // Filter by search term (name or phone)
         if (searchTerm) {
@@ -205,7 +226,7 @@ export default function BookingsPage() {
         }
 
         return filtered;
-    }, [searchTerm, statusFilter]);
+    }, [bookings, searchTerm, statusFilter]);
 
     // Pagination
     const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
@@ -216,8 +237,80 @@ export default function BookingsPage() {
 
     // Handle status change
     const handleStatusChange = (bookingId: string, newStatus: BookingStatus) => {
-        // In a real app, this would update the database
-        console.log(`Changing booking ${bookingId} status to ${newStatus}`);
+        setBookings(prevBookings =>
+            prevBookings.map(booking =>
+                booking.id === bookingId ? { ...booking, status: newStatus } : booking
+            )
+        );
+    };
+
+    // Handle form submission
+    const handleSubmit = () => {
+        // Validate required fields
+        if (!formData.customerName.trim() || !formData.phone.trim() ||
+            !formData.consultationDate || !formData.consultationTime) {
+            alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+            return;
+        }
+
+        const newBooking: Booking = {
+            id: editingBooking ? editingBooking.id : Date.now().toString(),
+            customerName: formData.customerName,
+            phone: formData.phone,
+            consultationDate: formData.consultationDate,
+            consultationTime: formData.consultationTime,
+            requirements: formData.requirements,
+            status: formData.status,
+            createdAt: editingBooking ? editingBooking.createdAt : new Date().toISOString()
+        };
+
+        if (editingBooking) {
+            // Update existing booking
+            setBookings(prevBookings =>
+                prevBookings.map(booking =>
+                    booking.id === editingBooking.id ? newBooking : booking
+                )
+            );
+        } else {
+            // Add new booking
+            setBookings(prevBookings => [newBooking, ...prevBookings]);
+        }
+
+        handleCloseModal();
+    };
+
+    // Handle opening modal for new booking
+    const handleAddNew = () => {
+        setEditingBooking(null);
+        setFormData({
+            customerName: '',
+            phone: '',
+            consultationDate: '',
+            consultationTime: '',
+            requirements: '',
+            status: 'pending'
+        });
+        setIsModalOpen(true);
+    };
+
+    // Handle opening modal for editing
+    const handleEdit = (booking: Booking) => {
+        setEditingBooking(booking);
+        setFormData({
+            customerName: booking.customerName,
+            phone: booking.phone,
+            consultationDate: booking.consultationDate,
+            consultationTime: booking.consultationTime,
+            requirements: booking.requirements,
+            status: booking.status
+        });
+        setIsModalOpen(true);
+    };
+
+    // Handle closing modal
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingBooking(null);
     };
 
     // Get status display
@@ -237,14 +330,25 @@ export default function BookingsPage() {
         <AdminLayout>
             <div className="p-6 lg:p-8">
                 {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center mb-2">
-                        <svg className="w-8 h-8 text-rose-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <h1 className="text-3xl font-bold text-gray-900">Quản lý lịch hẹn tư vấn</h1>
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <div className="flex items-center mb-2">
+                            <svg className="w-8 h-8 text-rose-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <h1 className="text-3xl font-bold text-gray-900">Quản lý lịch hẹn tư vấn</h1>
+                        </div>
+                        <p className="text-gray-600">Danh sách các lịch hẹn tư vấn cưới từ khách hàng</p>
                     </div>
-                    <p className="text-gray-600">Danh sách các lịch hẹn tư vấn cưới từ khách hàng</p>
+                    <button
+                        onClick={handleAddNew}
+                        className="bg-rose-600 hover:bg-rose-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-300 flex items-center space-x-2"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Thêm lịch hẹn</span>
+                    </button>
                 </div>
 
                 {/* Stats Cards */}
