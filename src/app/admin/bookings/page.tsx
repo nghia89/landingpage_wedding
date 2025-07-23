@@ -354,7 +354,7 @@ export default function BookingsPage() {
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     {statusOptions.slice(1).map((status) => {
-                        const count = mockBookings.filter(booking => booking.status === status.value).length;
+                        const count = bookings.filter(booking => booking.status === status.value).length;
                         return (
                             <div key={status.value} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-300">
                                 <div className="flex items-center">
