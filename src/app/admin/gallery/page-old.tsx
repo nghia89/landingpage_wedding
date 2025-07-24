@@ -63,14 +63,14 @@ export default function GalleryAdminPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       if (editingGallery) {
         await updateGallery(editingGallery._id, formData);
       } else {
         await createGallery(formData);
       }
-      
+
       handleCloseModal();
       refetch();
     } catch (error) {
@@ -394,7 +394,6 @@ export default function GalleryAdminPage() {
           </div>
         </div>
       )}
-      </div>
     </AdminLayout>
   );
 }
