@@ -6,13 +6,18 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {
+    "@auth/mongodb-adapter": "^3.10.0",
     "@heroicons/react": "^2.2.0",
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^3.0.2",
     "clsx": "^2.1.1",
     "mongoose": "^8.16.4",
     "next": "15.4.2",
+    "next-auth": "^4.24.11",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "recharts": "^3.1.0",

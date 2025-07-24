@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import TokenStatus from '@/components/TokenStatus';
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -11,6 +13,7 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const pathname = usePathname();
+    const { data: session } = useSession();
 
     const navigation = [
         { name: 'Dashboard', href: '/admin', icon: 'dashboard', current: pathname === '/admin' },
@@ -19,7 +22,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         // { name: 'Lịch hẹn tư vấn', href: '/admin/appointments', icon: 'clock', current: pathname === '/admin/appointments' },
         // { name: 'Dự án', href: '/admin/projects', icon: 'briefcase', current: pathname === '/admin/projects' },
         { name: 'Dịch vụ', href: '/admin/services', icon: 'heart', current: pathname === '/admin/services' },
-        // { name: 'Khuyến mãi', href: '/admin/promotions', icon: 'gift', current: pathname === '/admin/promotions' },
+        { name: 'Khuyến mãi', href: '/admin/promotions', icon: 'gift', current: pathname === '/admin/promotions' },
         // { name: 'Báo cáo', href: '/admin/reports', icon: 'chart', current: pathname === '/admin/reports' },
         { name: 'Cài đặt', href: '/admin/settings', icon: 'settings', current: pathname === '/admin/settings' },
     ];
@@ -158,12 +161,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
                             <div className="flex items-center space-x-3">
                                 <div className="w-8 h-8 bg-gradient-to-r from-rose-500 to-pink-600 rounded-full flex items-center justify-center">
-                                    <span className="text-sm font-medium text-white">A</span>
+                                    <span className="text-sm font-medium text-white">
+                                        {session?.user?.name?.charAt(0).toUpperCase() || 'A'}
+                                    </span>
                                 </div>
                                 <div className="hidden md:block">
-                                    <p className="text-sm font-medium text-gray-900">Admin User</p>
-                                    <p className="text-xs text-gray-500">admin@weddingdreams.vn</p>
+                                    <p className="text-sm font-medium text-gray-900">
+                                        {session?.user?.name || 'Admin User'}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                        {session?.user?.email || 'admin@weddingdreams.vn'}
+                                    </p>
+                                    {/* <TokenStatus /> */}
                                 </div>
+                                <button
+                                    onClick={() => signOut({ callbackUrl: '/admin/login' })}
+                                    className="text-gray-400 hover:text-gray-600 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-rose-500"
+                                    title="Đăng xuất"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
