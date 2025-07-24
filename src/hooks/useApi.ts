@@ -11,7 +11,13 @@ import {
     ContactFormData,
     Promotion,
     Service,
-    PaginatedResponse
+    PaginatedResponse,
+    Gallery,
+    GalleryCreateData,
+    GalleryUpdateData,
+    Review,
+    ReviewCreateData,
+    ReviewUpdateData
 } from '@/types/api';
 
 // Generic hook for API calls với debounce
@@ -328,4 +334,193 @@ export function useRealTimeData<T>(
     }, [interval, execute]);
 
     return { data, loading, error, refetch: execute };
+}
+
+// Gallery hooks
+export function useGalleries(params?: { page?: number; limit?: number; search?: string }) {
+    const memoizedParams = useMemo(() => {
+        if (!params) return {};
+
+        const queryParams: Record<string, string> = {};
+        if (params.page) queryParams.page = params.page.toString();
+        if (params.limit) queryParams.limit = params.limit.toString();
+        if (params.search) queryParams.search = params.search;
+
+        return queryParams;
+    }, [params?.page, params?.limit, params?.search]);
+
+    return useApiCall(
+        async () => {
+            const response = await apiClient.get<{
+                success: boolean;
+                data: Gallery[];
+                pagination: any;
+            }>('/api/admin/gallery', memoizedParams);
+            return response;
+        },
+        [JSON.stringify(memoizedParams)],
+        false,
+        300
+    );
+}
+
+export function useCreateGallery() {
+    const { submit, loading, error } = useSubmit<GalleryCreateData, Gallery>();
+
+    const createGallery = async (data: GalleryCreateData) => {
+        return submit(
+            async (galleryData) => {
+                const response = await apiClient.post<{
+                    success: boolean;
+                    data: Gallery;
+                }>('/api/admin/gallery', galleryData);
+                return response.data?.data!; // Return just the Gallery object
+            },
+            data,
+            {
+                successMessage: 'Thêm ảnh thành công!',
+            }
+        );
+    };
+
+    return { createGallery, loading, error };
+}
+
+export function useUpdateGallery() {
+    const { submit, loading, error } = useSubmit<{ id: string, data: GalleryUpdateData }, Gallery>();
+
+    const updateGallery = async (id: string, data: GalleryUpdateData) => {
+        return submit(
+            async ({ id, data }) => {
+                const response = await apiClient.put<{
+                    success: boolean;
+                    data: Gallery;
+                }>(`/api/admin/gallery/${id}`, data);
+                return response.data?.data!; // Return just the Gallery object
+            },
+            { id, data },
+            {
+                successMessage: 'Cập nhật ảnh thành công!',
+            }
+        );
+    };
+
+    return { updateGallery, loading, error };
+}
+
+export function useDeleteGallery() {
+    const { submit, loading, error } = useSubmit<string, Gallery>();
+
+    const deleteGallery = async (id: string) => {
+        return submit(
+            async (galleryId) => {
+                const response = await apiClient.delete<{
+                    success: boolean;
+                    data: Gallery;
+                }>(`/api/admin/gallery/${galleryId}`);
+                return response.data?.data!; // Return just the Gallery object
+            },
+            id,
+            {
+                successMessage: 'Xóa ảnh thành công!',
+            }
+        );
+    };
+
+    return { deleteGallery, loading, error };
+}
+
+// Review hooks
+export function useReviews(params?: { page?: number; limit?: number; search?: string; rating?: number }) {
+    const memoizedParams = useMemo(() => {
+        if (!params) return {};
+
+        const queryParams: Record<string, string> = {};
+        if (params.page) queryParams.page = params.page.toString();
+        if (params.limit) queryParams.limit = params.limit.toString();
+        if (params.search) queryParams.search = params.search;
+        if (params.rating) queryParams.rating = params.rating.toString();
+
+        return queryParams;
+    }, [params?.page, params?.limit, params?.search, params?.rating]);
+
+    return useApiCall(
+        async () => {
+            const response = await apiClient.get<{
+                success: boolean;
+                data: Review[];
+                pagination: any;
+            }>('/api/admin/reviews', memoizedParams);
+            return response;
+        },
+        [JSON.stringify(memoizedParams)],
+        false,
+        300
+    );
+}
+
+export function useCreateReview() {
+    const { submit, loading, error } = useSubmit<ReviewCreateData, Review>();
+
+    const createReview = async (data: ReviewCreateData) => {
+        return submit(
+            async (reviewData) => {
+                const response = await apiClient.post<{
+                    success: boolean;
+                    data: Review;
+                }>('/api/admin/reviews', reviewData);
+                return response.data?.data!;
+            },
+            data,
+            {
+                successMessage: 'Tạo đánh giá thành công!',
+            }
+        );
+    };
+
+    return { createReview, loading, error };
+}
+
+export function useUpdateReview() {
+    const { submit, loading, error } = useSubmit<ReviewUpdateData, Review>();
+
+    const updateReview = async (id: string, data: ReviewUpdateData) => {
+        return submit(
+            async (reviewData) => {
+                const response = await apiClient.put<{
+                    success: boolean;
+                    data: Review;
+                }>(`/api/admin/reviews/${id}`, reviewData);
+                return response.data?.data!;
+            },
+            data,
+            {
+                successMessage: 'Cập nhật đánh giá thành công!',
+            }
+        );
+    };
+
+    return { updateReview, loading, error };
+}
+
+export function useDeleteReview() {
+    const { submit, loading, error } = useSubmit<void, Review>();
+
+    const deleteReview = async (id: string) => {
+        return submit(
+            async () => {
+                const response = await apiClient.delete<{
+                    success: boolean;
+                    data: Review;
+                }>(`/api/admin/reviews/${id}`);
+                return response.data?.data!;
+            },
+            undefined,
+            {
+                successMessage: 'Xóa đánh giá thành công!',
+            }
+        );
+    };
+
+    return { deleteReview, loading, error };
 }

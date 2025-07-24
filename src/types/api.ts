@@ -98,6 +98,56 @@ export interface Customer {
     updatedAt: string;
 }
 
+// Gallery types
+export interface Gallery {
+    _id: string;
+    title: string;
+    description: string;
+    imageUrl: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface GalleryCreateData {
+    title: string;
+    description: string;
+    imageUrl: string;
+}
+
+export interface GalleryUpdateData {
+    title?: string;
+    description?: string;
+    imageUrl?: string;
+}
+
+// Review types
+export interface Review {
+    _id: string;
+    customerName: string;
+    avatarUrl: string;
+    content: string;
+    rating: number;
+    eventDate: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ReviewCreateData {
+    customerName: string;
+    avatarUrl: string;
+    content: string;
+    rating: number;
+    eventDate: string;
+}
+
+export interface ReviewUpdateData {
+    customerName?: string;
+    avatarUrl?: string;
+    content?: string;
+    rating?: number;
+    eventDate?: string;
+}
+
 // Common API response wrapper
 export interface PaginatedResponse<T> {
     data: T[];
