@@ -69,13 +69,20 @@ export interface Service {
     name: string;
     description: string;
     price: number;
-    duration: number; // in minutes
-    category: string;
-    image?: string;
-    isActive: boolean;
     features: string[];
+    category: 'basic' | 'standard' | 'premium' | 'luxury';
+    isActive: boolean;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface ServiceCreateData {
+    name: string;
+    description: string;
+    price: number;
+    features: string[];
+    category: 'basic' | 'standard' | 'premium' | 'luxury';
+    isActive?: boolean;
 }
 
 // Customer types

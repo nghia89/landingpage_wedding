@@ -68,6 +68,7 @@ export function useApiCall<T>(
                 clearTimeout(debounceRef.current);
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [autoExecute, debouncedExecute, ...dependencies]);
 
     return { data, loading, error, execute, refetch: execute };
@@ -263,18 +264,28 @@ export function usePromotions(params?: { active?: boolean; limit?: number }) {
 // Services
 export function useServices(params?: { active?: boolean; category?: string }) {
     // Memoize params để tránh infinite loop
-    const memoizedParams = useMemo(() => params || {}, [
-        params?.active,
-        params?.category
-    ]);
+    const memoizedParams = useMemo(() => {
+        if (!params) return {};
+
+        const queryParams: Record<string, string> = {};
+        if (params.active !== undefined) {
+            queryParams.isActive = params.active.toString();
+        }
+        if (params.category) {
+            queryParams.category = params.category;
+        }
+
+        return queryParams;
+    }, [params?.active, params?.category]);
 
     return useApiCall(
         async () => {
             const response = await apiClient.get<Service[]>('/api/services', memoizedParams);
             return response.data || [];
         },
-        [memoizedParams?.active, memoizedParams?.category], // Chỉ depend vào các giá trị cụ thể
-        true
+        [JSON.stringify(memoizedParams)], // Sử dụng JSON.stringify để stable dependency
+        false, // Tắt auto execute để tránh infinite loop
+        300 // Debounce 300ms
     );
 }
 

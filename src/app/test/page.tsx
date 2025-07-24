@@ -62,6 +62,13 @@ export default function TestIndexPage() {
             url: "/toast-test",
             status: "✅ Fixed",
             features: ["Long text handling", "Responsive layout", "Break words", "Better spacing"]
+        },
+        {
+            title: "🎁 Dynamic Service Packages",
+            description: "Test dynamic service packages fetch từ API",
+            url: "/service-test",
+            status: "✅ Complete",
+            features: ["API integration", "Fallback data", "Category filtering", "Responsive design"]
         }
     ];
 

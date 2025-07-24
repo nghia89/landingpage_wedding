@@ -6,6 +6,7 @@ import WeddingProcessTimeline from "@/components/WeddingProcessTimeline";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import GallerySection from "@/components/GallerySection";
 import ServicePackages from "@/components/ServicePackages";
+import DynamicServicePackages from "@/components/DynamicServicePackages";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import ContactFormSection from "@/components/ContactFormSection";
 import Footer from "@/components/Footer";
@@ -20,7 +21,7 @@ export default function Home() {
       <WeddingProcessTimeline />
       <WhyChooseUs />
       <GallerySection />
-      <ServicePackages />
+      <DynamicServicePackages />
       <TestimonialsSection />
       <ContactFormSection />
       <Footer />
