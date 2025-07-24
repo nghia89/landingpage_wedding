@@ -1,26 +1,33 @@
 "use client";
 
 import { useState } from 'react';
+import { useBookingSubmit } from '@/hooks/useApi';
+import { BookingFormData } from '@/types/api';
 
 interface FormData {
-    fullName: string;
+    name: string;
     phone: string;
-    weddingDate: string;
-    requirements: string;
+    email: string;
+    date: string;
+    time: string;
+    service: string;
+    message: string;
 }
 
 export default function ContactFormSection() {
     const [formData, setFormData] = useState<FormData>({
-        fullName: '',
+        name: '',
         phone: '',
-        weddingDate: '',
-        requirements: ''
+        email: '',
+        date: '',
+        time: '',
+        service: 'consultation',
+        message: ''
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitMessage, setSubmitMessage] = useState('');
-    const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { submitBooking, loading, error } = useBookingSubmit();
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -30,40 +37,34 @@ export default function ContactFormSection() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSubmitting(true);
-        setSubmitMessage('');
-        setSubmitStatus(null);
 
         try {
-            const response = await fetch('/api/send-email', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
+            // Convert form data to API format
+            const bookingData: BookingFormData = {
+                name: formData.name,
+                email: formData.email,
+                phone: formData.phone,
+                date: formData.date,
+                time: formData.time,
+                service: formData.service,
+                message: formData.message
+            };
+
+            await submitBooking(bookingData);
+
+            // Reset form on success
+            setFormData({
+                name: '',
+                phone: '',
+                email: '',
+                date: '',
+                time: '',
+                service: 'consultation',
+                message: ''
             });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                setSubmitStatus('success');
-                setSubmitMessage(result.message);
-                // Reset form
-                setFormData({
-                    fullName: '',
-                    phone: '',
-                    weddingDate: '',
-                    requirements: ''
-                });
-            } else {
-                setSubmitStatus('error');
-                setSubmitMessage(result.error || 'Có lỗi xảy ra khi gửi yêu cầu');
-            }
-        } catch {
-            setSubmitStatus('error');
-            setSubmitMessage('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
-        } finally {
-            setIsSubmitting(false);
+        } catch (err) {
+            // Error is handled by the hook and toast
+            console.error('Booking submission failed:', err);
         }
     };
     return (
@@ -108,14 +109,14 @@ export default function ContactFormSection() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {/* Full Name */}
                                 <div className="md:col-span-1">
-                                    <label htmlFor="fullName" className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
+                                    <label htmlFor="name" className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
                                         Họ và tên <span className="text-rose-500">*</span>
                                     </label>
                                     <input
                                         type="text"
-                                        id="fullName"
-                                        name="fullName"
-                                        value={formData.fullName}
+                                        id="name"
+                                        name="name"
+                                        value={formData.name}
                                         onChange={handleInputChange}
                                         required
                                         placeholder="Nhập họ và tên của bạn"
@@ -141,30 +142,90 @@ export default function ContactFormSection() {
                                 </div>
                             </div>
 
-                            {/* Wedding Date */}
+                            {/* Email */}
                             <div>
-                                <label htmlFor="weddingDate" className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
-                                    Ngày dự kiến cưới
+                                <label htmlFor="email" className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
+                                    Email
                                 </label>
                                 <input
-                                    type="date"
-                                    id="weddingDate"
-                                    name="weddingDate"
-                                    value={formData.weddingDate}
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    value={formData.email}
                                     onChange={handleInputChange}
-                                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-300 text-gray-800 bg-white/80 backdrop-blur-sm hover:shadow-lg font-medium"
+                                    // required
+                                    placeholder="your.email@example.com"
+                                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-300 text-gray-800 placeholder-gray-500 bg-white/80 backdrop-blur-sm hover:shadow-lg font-medium"
                                 />
                             </div>
 
+                            {/* Date and Time */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Wedding Date */}
+                                <div>
+                                    <label htmlFor="date" className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
+                                        Ngày tư vấn <span className="text-rose-500">*</span>
+                                    </label>
+                                    <input
+                                        type="date"
+                                        id="date"
+                                        name="date"
+                                        value={formData.date}
+                                        onChange={handleInputChange}
+                                        required
+                                        min={new Date().toISOString().split('T')[0]} // Không cho chọn ngày quá khứ
+                                        className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-300 text-gray-800 bg-white/80 backdrop-blur-sm hover:shadow-lg font-medium"
+                                    />
+                                </div>
+
+                                {/* Time */}
+                                <div>
+                                    <label htmlFor="time" className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
+                                        Giờ tư vấn <span className="text-rose-500">*</span>
+                                    </label>
+                                    <input
+                                        type="time"
+                                        id="time"
+                                        name="time"
+                                        value={formData.time}
+                                        onChange={handleInputChange}
+                                        required
+                                        className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-300 text-gray-800 bg-white/80 backdrop-blur-sm hover:shadow-lg font-medium"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Service Type */}
+                            {/* <div>
+                                <label htmlFor="service" className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
+                                    Loại dịch vụ quan tâm
+                                </label>
+                                <select
+                                    id="service"
+                                    name="service"
+                                    value={formData.service}
+                                    onChange={handleInputChange}
+                                    className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all duration-300 text-gray-800 bg-white/80 backdrop-blur-sm hover:shadow-lg font-medium"
+                                >
+                                    <option value="consultation">Tư vấn chung</option>
+                                    <option value="venue">Địa điểm tổ chức</option>
+                                    <option value="decoration">Trang trí tiệc cưới</option>
+                                    <option value="photography">Chụp ảnh cưới</option>
+                                    <option value="makeup">Trang điểm cô dâu</option>
+                                    <option value="catering">Tiệc cưới</option>
+                                    <option value="full-package">Gói trọn gói</option>
+                                </select>
+                            </div> */}
+
                             {/* Special Requirements */}
                             <div>
-                                <label htmlFor="requirements" className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
-                                    Yêu cầu riêng
+                                <label htmlFor="message" className="block text-sm font-semibold text-gray-800 mb-3 tracking-wide">
+                                    Ghi chú thêm
                                 </label>
                                 <textarea
-                                    id="requirements"
-                                    name="requirements"
-                                    value={formData.requirements}
+                                    id="message"
+                                    name="message"
+                                    value={formData.message}
                                     onChange={handleInputChange}
                                     rows={5}
                                     placeholder="Chia sẻ với chúng tôi về ý tưởng, phong cách, số lượng khách mời, ngân sách hoặc yêu cầu đặc biệt khác..."
@@ -172,13 +233,10 @@ export default function ContactFormSection() {
                                 ></textarea>
                             </div>
 
-                            {/* Submit Message */}
-                            {submitMessage && (
-                                <div className={`p-4 rounded-2xl ${submitStatus === 'success'
-                                    ? 'bg-green-50 border border-green-200 text-green-800'
-                                    : 'bg-red-50 border border-red-200 text-red-800'
-                                    }`}>
-                                    <p className="text-center font-medium">{submitMessage}</p>
+                            {/* Error Display */}
+                            {error && (
+                                <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800">
+                                    <p className="text-center font-medium">{error}</p>
                                 </div>
                             )}
 
@@ -186,14 +244,14 @@ export default function ContactFormSection() {
                             <div className="pt-6">
                                 <button
                                     type="submit"
-                                    disabled={isSubmitting}
-                                    className={`group w-full ${isSubmitting
+                                    disabled={loading}
+                                    className={`group w-full ${loading
                                         ? 'bg-gray-400 cursor-not-allowed'
                                         : 'bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700'
                                         } text-white font-semibold py-5 px-8 rounded-2xl shadow-2xl hover:shadow-pink-500/25 transform hover:scale-105 hover:-translate-y-1 transition-all duration-500 text-lg tracking-wide relative overflow-hidden`}
                                 >
                                     <span className="relative z-10 flex items-center justify-center space-x-3">
-                                        {isSubmitting ? (
+                                        {loading ? (
                                             <>
                                                 <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -203,14 +261,14 @@ export default function ContactFormSection() {
                                             </>
                                         ) : (
                                             <>
-                                                <span>Gửi yêu cầu tư vấn</span>
+                                                <span>Đặt lịch tư vấn</span>
                                                 <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0V9a2 2 0 00-2 2v9a2 2 0 002 2h8a2 2 0 002-2v-9a2 2 0 00-2-2V7" />
                                                 </svg>
                                             </>
                                         )}
                                     </span>
-                                    {!isSubmitting && (
+                                    {!loading && (
                                         <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                                     )}
                                 </button>
