@@ -163,6 +163,10 @@ async function createBooking(request: NextRequest) {
     try {
         const body = await request.json();
 
+        // Check if this request should send email (from frontend vs admin)
+        const { searchParams } = new URL(request.url);
+        const shouldSendEmail = searchParams.get('sendEmail') === 'true';
+
         // Validate required fields
         const requiredFields = ['customerName', 'phone', 'consultationDate', 'consultationTime'];
         for (const field of requiredFields) {
@@ -184,14 +188,19 @@ async function createBooking(request: NextRequest) {
             status: body.status || 'pending'
         });
 
-        // Send email notification after successful booking creation
-        await sendBookingNotificationEmail({
-            customerName: body.customerName,
-            phone: body.phone,
-            consultationDate: body.consultationDate,
-            consultationTime: body.consultationTime,
-            requirements: body.requirements
-        });
+        // Send email notification only if requested (from frontend)
+        if (shouldSendEmail) {
+            console.log('📧 Sending email notification for frontend booking...');
+            await sendBookingNotificationEmail({
+                customerName: body.customerName,
+                phone: body.phone,
+                consultationDate: body.consultationDate,
+                consultationTime: body.consultationTime,
+                requirements: body.requirements
+            });
+        } else {
+            console.log('📝 Booking created without email notification (admin or direct API)');
+        }
 
         return NextResponse.json({
             success: true,

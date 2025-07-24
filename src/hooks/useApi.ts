@@ -161,15 +161,15 @@ export function useBookingSubmit() {
                     status: 'pending'
                 };
 
-                const response = await apiClient.post<Booking>('/api/bookings', apiData);
-                // Email notification is automatically sent by the backend API
-                console.log('� Booking created successfully, email notification sent automatically');
+                // Add sendEmail=true parameter for frontend bookings
+                const response = await apiClient.post<Booking>('/api/bookings?sendEmail=true', apiData);
+                console.log('📧 Booking created successfully from frontend, email notification sent');
 
                 return { data: response.data! };
             },
             data,
             {
-                successMessage: 'Đặt lịch thành công! Chúng tôi sẽ liên hệ với bạn sớm.',
+                successMessage: 'Đặt lịch thành công! Chúng tôi sẽ liên hệ với bạn sớm và bạn sẽ nhận được email xác nhận.',
             }
         );
     };

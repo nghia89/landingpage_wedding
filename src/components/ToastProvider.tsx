@@ -61,7 +61,7 @@ function ToastContainer({ toasts, onRemove }: {
     if (toasts.length === 0) return null;
 
     return (
-        <div className="fixed top-4 right-4 z-50 space-y-4">
+        <div className="fixed top-4 right-4 z-50 space-y-4 max-w-md w-full pr-4">
             {toasts.map((toast) => (
                 <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
             ))}
@@ -122,28 +122,28 @@ function ToastItem({ toast, onRemove }: {
 
     return (
         <div className={`
-            max-w-sm w-full shadow-lg rounded-lg pointer-events-auto border
+            w-full shadow-lg rounded-lg pointer-events-auto border
             transform transition-all duration-300 ease-in-out
             ${getToastStyles()}
         `}>
             <div className="p-4">
-                <div className="flex items-start">
-                    <div className="flex-shrink-0">
+                <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 mt-0.5">
                         {getIcon()}
                     </div>
-                    <div className="ml-3 w-0 flex-1">
-                        <p className="text-sm font-medium">
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium leading-relaxed break-words">
                             {toast.title}
                         </p>
                         {toast.message && (
-                            <p className="mt-1 text-sm opacity-90">
+                            <p className="mt-2 text-sm opacity-90 leading-relaxed break-words">
                                 {toast.message}
                             </p>
                         )}
                     </div>
-                    <div className="ml-4 flex-shrink-0 flex">
+                    <div className="flex-shrink-0">
                         <button
-                            className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none"
+                            className="inline-flex text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 rounded-md p-1 transition-colors duration-200"
                             onClick={() => onRemove(toast.id)}
                         >
                             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

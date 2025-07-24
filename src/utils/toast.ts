@@ -6,7 +6,7 @@ export const showToast = (message: string, type: ToastType = 'info') => {
 
     // Create toast element
     const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transform transition-all duration-300 ease-in-out translate-x-full opacity-0`;
+    toast.className = `fixed top-4 right-4 z-50 max-w-md w-full mr-4 px-4 py-3 rounded-lg shadow-lg text-white font-medium transform transition-all duration-300 ease-in-out translate-x-full opacity-0`;
 
     // Add type-specific styling
     switch (type) {
@@ -23,7 +23,12 @@ export const showToast = (message: string, type: ToastType = 'info') => {
             toast.className += ' bg-blue-500';
     }
 
-    toast.textContent = message;
+    // Create inner content with better text handling
+    const content = document.createElement('div');
+    content.className = 'break-words leading-relaxed';
+    content.textContent = message;
+    toast.appendChild(content);
+
     document.body.appendChild(toast);
 
     // Show toast
