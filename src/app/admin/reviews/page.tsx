@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useReviews, useCreateReview, useUpdateReview, useDeleteReview } from '@/hooks/useApi';
 import { Review } from '@/types/api';
 import AdminLayout from '@/components/admin/AdminLayout';
+import ImageUploadCloudinary from '@/components/admin/ImageUploadCloudinary';
 
 export default function ReviewsAdminPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -33,8 +34,16 @@ export default function ReviewsAdminPage() {
         eventDate: ''
     });
 
-    const reviews = reviewsResponse?.data?.data || [];
-    const pagination = reviewsResponse?.data?.pagination;
+    // Extract data with proper type checking
+    const rawData = reviewsResponse?.data;
+    const reviews: Review[] = Array.isArray(rawData?.data) ? rawData.data :
+        Array.isArray(rawData) ? rawData : [];
+    const pagination = rawData?.pagination;
+
+    // Fetch data only once on mount and when filters change
+    useEffect(() => {
+        refetch();
+    }, [currentPage, searchTerm, ratingFilter, refetch]); // Include refetch in dependencies
 
     const handleOpenModal = (review?: Review) => {
         if (review) {
@@ -398,28 +407,12 @@ export default function ReviewsAdminPage() {
                                     </div>
 
                                     <div>
-                                        <label htmlFor="avatarUrl" className="block text-sm font-medium text-gray-700">
-                                            URL Avatar
-                                        </label>
-                                        <input
-                                            type="url"
-                                            id="avatarUrl"
-                                            value={formData.avatarUrl}
-                                            onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-                                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
-                                            placeholder="https://example.com/avatar.jpg"
+                                        <ImageUploadCloudinary
+                                            onUpload={(url) => setFormData({ ...formData, avatarUrl: url })}
+                                            defaultValue={formData.avatarUrl}
+                                            label="Avatar khách hàng"
+                                            className="w-full"
                                         />
-                                        {formData.avatarUrl && (
-                                            <img
-                                                src={formData.avatarUrl}
-                                                alt="Preview"
-                                                className="mt-2 h-12 w-12 rounded-full object-cover"
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.style.display = 'none';
-                                                }}
-                                            />
-                                        )}
                                     </div>
 
                                     <div>

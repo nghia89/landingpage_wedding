@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGalleries, useCreateGallery, useUpdateGallery, useDeleteGallery } from '@/hooks/useApi';
 import { Gallery } from '@/types/api';
 import AdminLayout from '@/components/admin/AdminLayout';
+import ImageUploadCloudinary from '@/components/admin/ImageUploadCloudinary';
 
 export default function GalleryAdminPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,8 +30,16 @@ export default function GalleryAdminPage() {
         imageUrl: ''
     });
 
-    const galleries = galleriesResponse?.data?.data || [];
-    const pagination = galleriesResponse?.data?.pagination;
+    // Extract data with proper type checking
+    const rawData = galleriesResponse?.data;
+    const galleries: Gallery[] = Array.isArray(rawData?.data) ? rawData.data :
+        Array.isArray(rawData) ? rawData : [];
+    const pagination = rawData?.pagination;
+
+    // Fetch data only once on mount and when filters change
+    useEffect(() => {
+        refetch();
+    }, [currentPage, searchTerm, refetch]); // Include refetch in dependencies
 
     const handleOpenModal = (gallery?: Gallery) => {
         if (gallery) {
@@ -339,37 +348,13 @@ export default function GalleryAdminPage() {
                                     </div>
 
                                     <div>
-                                        <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">
-                                            URL ảnh *
-                                        </label>
-                                        <input
-                                            type="url"
-                                            id="imageUrl"
-                                            required
-                                            value={formData.imageUrl}
-                                            onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-pink-500 focus:border-pink-500"
-                                            placeholder="https://example.com/image.jpg"
+                                        <ImageUploadCloudinary
+                                            onUpload={(url) => setFormData({ ...formData, imageUrl: url })}
+                                            defaultValue={formData.imageUrl}
+                                            label="Ảnh gallery *"
+                                            className="w-full"
                                         />
                                     </div>
-
-                                    {/* Preview */}
-                                    {formData.imageUrl && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Xem trước
-                                            </label>
-                                            <img
-                                                src={formData.imageUrl}
-                                                alt="Preview"
-                                                className="w-full h-32 object-cover rounded-md border border-gray-300"
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.style.display = 'none';
-                                                }}
-                                            />
-                                        </div>
-                                    )}
 
                                     {/* Modal Actions */}
                                     <div className="flex gap-3 pt-4">

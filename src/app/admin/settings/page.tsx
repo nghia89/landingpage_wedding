@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useGeneralSettings, GeneralSettings } from '@/hooks/useGeneralSettings';
 import AdminLayout from '@/components/admin/AdminLayout';
+import ImageUploadCloudinary from '@/components/admin/ImageUploadCloudinary';
 import clsx from 'clsx';
 
 export default function GeneralSettingsPage() {
@@ -170,18 +171,13 @@ export default function GeneralSettingsPage() {
                                             />
                                         </div>
 
-                                        {/* Logo URL */}
+                                        {/* Logo Upload */}
                                         <div>
-                                            <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                                                Logo URL
-                                            </label>
-                                            <input
-                                                type="url"
-                                                id="logoUrl"
-                                                value={formData.logoUrl}
-                                                onChange={(e) => handleInputChange('logoUrl', e.target.value)}
-                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-rose-500"
-                                                placeholder="https://example.com/logo.png"
+                                            <ImageUploadCloudinary
+                                                onUpload={(url) => handleInputChange('logoUrl', url)}
+                                                defaultValue={formData.logoUrl}
+                                                label="Logo công ty"
+                                                className="w-full"
                                             />
                                         </div>
                                     </div>

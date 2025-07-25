@@ -344,22 +344,24 @@ export function useGalleries(params?: { page?: number; limit?: number; search?: 
         const queryParams: Record<string, string> = {};
         if (params.page) queryParams.page = params.page.toString();
         if (params.limit) queryParams.limit = params.limit.toString();
-        if (params.search) queryParams.search = params.search;
+        if (params.search && params.search.trim()) queryParams.search = params.search.trim();
 
         return queryParams;
     }, [params?.page, params?.limit, params?.search]);
 
+    const apiCall = useCallback(async () => {
+        const response = await apiClient.get<{
+            success: boolean;
+            data: Gallery[];
+            pagination: any;
+        }>('/api/admin/gallery', memoizedParams);
+        return response;
+    }, [memoizedParams]);
+
     return useApiCall(
-        async () => {
-            const response = await apiClient.get<{
-                success: boolean;
-                data: Gallery[];
-                pagination: any;
-            }>('/api/admin/gallery', memoizedParams);
-            return response;
-        },
-        [JSON.stringify(memoizedParams)],
-        false,
+        apiCall,
+        [memoizedParams],
+        false, // Tắt auto execute để tránh infinite loop
         300
     );
 }
@@ -444,17 +446,19 @@ export function useReviews(params?: { page?: number; limit?: number; search?: st
         return queryParams;
     }, [params?.page, params?.limit, params?.search, params?.rating]);
 
+    const apiCall = useCallback(async () => {
+        const response = await apiClient.get<{
+            success: boolean;
+            data: Review[];
+            pagination: any;
+        }>('/api/admin/reviews', memoizedParams);
+        return response;
+    }, [memoizedParams]);
+
     return useApiCall(
-        async () => {
-            const response = await apiClient.get<{
-                success: boolean;
-                data: Review[];
-                pagination: any;
-            }>('/api/admin/reviews', memoizedParams);
-            return response;
-        },
-        [JSON.stringify(memoizedParams)],
-        false,
+        apiCall,
+        [memoizedParams],
+        false, // Tắt auto execute
         300
     );
 }
