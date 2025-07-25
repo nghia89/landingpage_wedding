@@ -15,8 +15,6 @@ async function sendBookingNotificationEmail(bookingData: {
     requirements?: string;
 }) {
     if (!resend) {
-        console.log('📧 Email would be sent (Resend API key not configured):');
-        console.log('Booking notification for:', bookingData.customerName);
         return;
     }
 
@@ -86,7 +84,6 @@ async function sendBookingNotificationEmail(bookingData: {
             `,
         });
 
-        console.log('📧 Booking notification email sent successfully');
     } catch (emailError) {
         console.error('📧 Email sending failed:', emailError);
         // Don't throw error - booking should still succeed even if email fails
@@ -190,7 +187,6 @@ async function createBooking(request: NextRequest) {
 
         // Send email notification only if requested (from frontend)
         if (shouldSendEmail) {
-            console.log('📧 Sending email notification for frontend booking...');
             await sendBookingNotificationEmail({
                 customerName: body.customerName,
                 phone: body.phone,
@@ -198,8 +194,6 @@ async function createBooking(request: NextRequest) {
                 consultationTime: body.consultationTime,
                 requirements: body.requirements
             });
-        } else {
-            console.log('📝 Booking created without email notification (admin or direct API)');
         }
 
         return NextResponse.json({

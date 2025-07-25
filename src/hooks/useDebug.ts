@@ -15,16 +15,7 @@ export function useApiDebug(hookName: string, dependencies: React.DependencyList
         );
 
         if (depsChanged) {
-            console.log(`🔄 [${hookName}] API Call #${renderCount.current}`, {
-                dependencies,
-                previousDependencies: prevDeps.current,
-                changedDeps: dependencies.map((dep, index) => ({
-                    index,
-                    current: dep,
-                    previous: prevDeps.current[index],
-                    changed: dep !== prevDeps.current[index]
-                })).filter(item => item.changed)
-            });
+            // Debug logging removed for production
         }
 
         prevDeps.current = [...dependencies];
@@ -39,7 +30,7 @@ export function useRenderCount(componentName: string) {
 
     useEffect(() => {
         renderCount.current += 1;
-        console.log(`🔄 [${componentName}] Render #${renderCount.current}`);
+        // Debug logging removed for production
     });
 
     return renderCount.current;

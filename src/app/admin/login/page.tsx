@@ -24,7 +24,6 @@ export default function AdminLoginPage() {
         if (status === 'loading') return; // Still loading
 
         if (session && (session.user as any)?.role === 'admin') {
-            console.log('User already logged in, redirecting to:', callbackUrl);
             router.push(callbackUrl);
         }
     }, [session, status, router, callbackUrl]);

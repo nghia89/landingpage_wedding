@@ -67,7 +67,7 @@ export default function ApiIntegrationExample() {
                             để gửi dữ liệu đến API <code className="bg-gray-100 px-2 py-1 rounded">/api/bookings</code>
                         </p>
                         <BookingForm
-                            onSuccess={() => console.log('Booking submitted successfully!')}
+                            onSuccess={() => { }}
                         />
                     </div>
                 )}
@@ -80,7 +80,7 @@ export default function ApiIntegrationExample() {
                             để gửi dữ liệu đến API <code className="bg-gray-100 px-2 py-1 rounded">/api/contact</code>
                         </p>
                         <ContactForm
-                            onSuccess={() => console.log('Contact submitted successfully!')}
+                            onSuccess={() => { }}
                         />
                     </div>
                 )}

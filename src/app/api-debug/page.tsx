@@ -71,7 +71,6 @@ export default function ApiDebugPage() {
                                 <button
                                     onClick={() => {
                                         console.clear();
-                                        console.log('🚀 Console cleared. Watch for API calls...');
                                     }}
                                     className="w-full bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
                                 >

@@ -170,7 +170,6 @@ export function useBookingSubmit() {
 
                 // Add sendEmail=true parameter for frontend bookings
                 const response = await apiClient.post<Booking>('/api/bookings?sendEmail=true', apiData);
-                console.log('📧 Booking created successfully from frontend, email notification sent');
 
                 return { data: response.data! };
             },
@@ -243,7 +242,6 @@ export function usePromotions(params?: { active?: boolean; limit?: number }) {
             }
         } catch (error) {
             // Mock context not available, use real API
-            console.log('Mock context not available, using real API');
         }
     }, [memoizedParams]);
 

@@ -33,12 +33,6 @@ export function useSessionStatus() {
             });
             const data = await response.json();
 
-            console.log('Session check response:', {
-                ok: response.ok,
-                status: response.status,
-                data
-            });
-
             if (response.ok) {
                 setSessionStatus({
                     isValid: data.tokenStatus.accessTokenValid,

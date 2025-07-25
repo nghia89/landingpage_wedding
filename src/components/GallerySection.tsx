@@ -120,6 +120,7 @@ export default function GallerySection() {
 
     return (
         <section
+            id='gallery'
             ref={sectionRef}
             className="py-20 bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50"
         >

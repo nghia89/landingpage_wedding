@@ -11,7 +11,6 @@ export default function SessionRefreshHandler() {
     useEffect(() => {
         if (session?.error === "RefreshTokenExpired" || session?.error === "RefreshAccessTokenError") {
             // Both access and refresh tokens expired, or refresh failed
-            console.log('Tokens expired, redirecting to login...');
             signOut({
                 callbackUrl: '/admin/login',
                 redirect: true

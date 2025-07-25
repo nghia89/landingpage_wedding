@@ -14,19 +14,16 @@ export default function ImageUploadExamples() {
 
     const handleProductImageUpload = (url: string) => {
         setProductImage(url);
-        console.log('Product image uploaded:', url);
     };
 
     const handleBannerImageUpload = (url: string) => {
         setBannerImage(url);
-        console.log('Banner image uploaded:', url);
     };
 
     const handleMultipleImageUpload = (url: string, index: number) => {
         const newImages = [...multipleImages];
         newImages[index] = url;
         setMultipleImages(newImages);
-        console.log(`Gallery image ${index + 1} uploaded:`, url);
     };
 
     const addImageSlot = () => {
@@ -141,12 +138,7 @@ export default function ImageUploadExamples() {
                 </h2>
                 <form className="space-y-4" onSubmit={(e) => {
                     e.preventDefault();
-                    alert('Form submitted! Check console for data.');
-                    console.log({
-                        productImage,
-                        bannerImage,
-                        galleryImages: multipleImages.filter(Boolean)
-                    });
+                    alert('Form submitted!');
                 }}>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">

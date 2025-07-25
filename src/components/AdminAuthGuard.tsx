@@ -17,7 +17,6 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
 
         // Check for session errors (token expired)
         if (session?.error === "RefreshTokenExpired" || session?.error === "RefreshAccessTokenError") {
-            console.log('Session error:', session.error, 'redirecting to login');
             signOut({
                 callbackUrl: '/admin/login?error=session_expired',
                 redirect: true
@@ -26,13 +25,11 @@ export default function AdminAuthGuard({ children }: AdminAuthGuardProps) {
         }
 
         if (!session) {
-            console.log('No session, redirecting to login');
             router.push('/admin/login');
             return;
         }
 
         if ((session.user as any)?.role !== 'admin') {
-            console.log('User is not admin, redirecting to login');
             router.push('/admin/login?error=unauthorized');
             return;
         }

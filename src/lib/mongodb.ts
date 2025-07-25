@@ -25,7 +25,6 @@ if (!cached) {
 async function connectMongo(): Promise<mongoose.Connection> {
     // If we already have a connection, return it
     if (cached.conn) {
-        console.log('Using existing MongoDB connection');
         return cached.conn;
     }
 
@@ -36,7 +35,6 @@ async function connectMongo(): Promise<mongoose.Connection> {
         };
 
         cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-            console.log('New MongoDB connection established');
             return mongoose.connection;
         });
     }

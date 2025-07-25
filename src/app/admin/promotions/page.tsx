@@ -114,7 +114,6 @@ export default function PromotionsPage() {
                                 </div>
                                 <button
                                     onClick={() => {
-                                        console.log('Button clicked, opening form...');
                                         setIsFormOpen(true);
                                     }}
                                     className="bg-pink-600 hover:bg-pink-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center space-x-2"
@@ -162,10 +161,6 @@ export default function PromotionsPage() {
                         />
 
                         {/* Promotion Form Modal */}
-                        {(() => {
-                            console.log('isFormOpen:', isFormOpen);
-                            return null;
-                        })()}
                         {isFormOpen && (
                             <PromotionForm
                                 isOpen={isFormOpen}

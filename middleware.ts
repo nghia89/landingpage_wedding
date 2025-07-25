@@ -2,17 +2,12 @@ import { withAuth } from "next-auth/middleware";
 
 export default withAuth(
     function middleware(req) {
-        console.log("Middleware running for:", req.nextUrl.pathname);
-        console.log("Token exists:", !!req.nextauth.token);
-        console.log("User role:", req.nextauth.token?.role);
+        // Middleware for NextAuth.js authentication
     },
     {
         callbacks: {
             authorized: ({ token, req }) => {
                 const { pathname } = req.nextUrl;
-                console.log("Auth check for:", pathname);
-                console.log("Token:", !!token);
-                console.log("Role:", token?.role);
 
                 // Allow access to login page always
                 if (pathname === "/admin/login") {

@@ -9,7 +9,6 @@ export default function ImageUploadTestPage() {
     const [defaultImageUrl, setDefaultImageUrl] = useState<string>('');
 
     const handleUpload = (url: string) => {
-        console.log('Uploaded image URL:', url);
         setUploadedUrl(url);
     };
 
@@ -58,7 +57,7 @@ export default function ImageUploadTestPage() {
                                     />
                                 </div>
                                 <ImageUploadCloudinary
-                                    onUpload={(url) => console.log('Updated image URL:', url)}
+                                    onUpload={(url) => { }}
                                     defaultValue={defaultImageUrl}
                                     label="Ảnh có sẵn (có thể thay đổi)"
                                 />

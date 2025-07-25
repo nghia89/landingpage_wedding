@@ -25,8 +25,8 @@ export default async function Home() {
       <CountdownPromotion />
       <WeddingProcessTimeline />
       <WhyChooseUs />
-      <GallerySection />
       <DynamicServicePackages />
+      <GallerySection />
       <TestimonialsSection />
       <ContactFormSection settings={settings} />
       <Footer settings={settings} />

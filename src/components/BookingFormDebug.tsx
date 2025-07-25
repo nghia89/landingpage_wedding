@@ -20,11 +20,8 @@ export default function BookingFormDebug() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        console.log('🎯 Form Data being submitted:', formData);
-
         try {
             const result = await submitBooking(formData);
-            console.log('✅ Booking submitted successfully:', result);
         } catch (err) {
             console.error('❌ Booking submission failed:', err);
         }
@@ -166,8 +163,8 @@ export default function BookingFormDebug() {
                     type="submit"
                     disabled={loading}
                     className={`w-full py-3 px-4 rounded-md font-medium ${loading
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700'
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700'
                         } text-white transition-colors`}
                 >
                     {loading ? 'Submitting...' : 'Submit Booking'}

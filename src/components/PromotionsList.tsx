@@ -27,9 +27,6 @@ export default function PromotionsList({
 
     const { data: promotions, loading, error } = usePromotions(params);
 
-    // Log để debug
-    console.log('🎯 PromotionsList render:', { renderCount, params, promotions: promotions?.length });
-
     if (loading) {
         return (
             <div className={`${className}`}>
@@ -130,8 +127,8 @@ function PromotionCard({ promotion }: { promotion: Promotion }) {
                 {(isExpired || isUpcoming) && (
                     <div className="absolute top-4 left-4">
                         <div className={`px-3 py-1 rounded-full text-xs font-medium ${isExpired
-                                ? 'bg-gray-500 text-white'
-                                : 'bg-blue-500 text-white'
+                            ? 'bg-gray-500 text-white'
+                            : 'bg-blue-500 text-white'
                             }`}>
                             {isExpired ? 'Đã hết hạn' : 'Sắp diễn ra'}
                         </div>
