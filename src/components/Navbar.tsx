@@ -2,8 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { Bars3Icon, XMarkIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { PublicSettings } from '@/types/settings';
 
-export default function Navbar() {
+interface NavbarProps {
+    settings?: PublicSettings | null;
+}
+
+export default function Navbar({ settings }: NavbarProps) {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -54,17 +59,25 @@ export default function Navbar() {
                             ? 'w-10 h-10 bg-gradient-to-br from-rose-400 to-pink-500'
                             : 'w-12 h-12 bg-gradient-to-br from-rose-500 to-pink-600'
                             } rounded-full shadow-lg group-hover:shadow-xl group-hover:scale-110`}>
-                            <HeartIcon className={`transition-all duration-300 text-white ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'
-                                }`} />
+                            {settings?.logoUrl ? (
+                                <img
+                                    src={settings.logoUrl}
+                                    alt={settings.brandName}
+                                    className={`transition-all duration-300 rounded-full object-cover ${isScrolled ? 'w-8 h-8' : 'w-12 h-12'}`}
+                                />
+                            ) : (
+                                <HeartIcon className={`transition-all duration-300 text-white ${isScrolled ? 'w-5 h-5' : 'w-6 h-6'
+                                    }`} />
+                            )}
                         </div>
                         <div>
                             <h1 className={`font-serif font-bold text-gray-900 transition-all duration-300 ${isScrolled ? 'text-xl' : 'text-2xl'
                                 }`}>
-                                Wedding Dreams
+                                {settings?.brandName || 'Wedding Dreams'}
                             </h1>
                             <p className={`text-rose-600 font-medium transition-all duration-300 ${isScrolled ? 'text-xs' : 'text-sm'
                                 }`}>
-                                Mơ ước thành hiện thực
+                                {settings?.slogan || 'Mơ ước thành hiện thực'}
                             </p>
                         </div>
                     </div>
@@ -89,6 +102,19 @@ export default function Navbar() {
 
                     {/* CTA Button & Mobile Menu Button */}
                     <div className="flex items-center space-x-4">
+                        {/* Hotline - Hidden on mobile */}
+                        {/* {settings?.phone && (
+                            <a
+                                href={`tel:${settings.phone}`}
+                                className={`hidden md:flex items-center space-x-2 text-gray-700 hover:text-rose-600 transition-colors duration-300 ${isScrolled ? 'text-sm' : 'text-base'}`}
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21L6.16 11.37a12.976 12.976 0 005.47 5.47l1.983-4.064a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span className="font-medium">{settings.phone}</span>
+                            </a>
+                        )} */}
+
                         {/* CTA Button */}
                         <button
                             onClick={() => scrollToSection('dat-lich-tu-van')}

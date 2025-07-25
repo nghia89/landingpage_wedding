@@ -15,6 +15,8 @@ export interface IGeneralSettings extends Document {
     facebookPage?: string;
     instagram?: string;
     website?: string;
+    zaloUrl?: string;
+    slogan?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -76,6 +78,15 @@ const generalSettingsSchema = new Schema<IGeneralSettings>({
     website: {
         type: String,
         trim: true
+    },
+    zaloUrl: {
+        type: String,
+        trim: true
+    },
+    slogan: {
+        type: String,
+        trim: true,
+        default: 'Tạo nên những khoảnh khắc đáng nhớ nhất trong ngày trọng đại của bạn'
     }
 }, {
     timestamps: true
@@ -191,7 +202,9 @@ export const PUT = withMongo(async (request: NextRequest): Promise<NextResponse<
             closeTime: body.closeTime,
             facebookPage: body.facebookPage?.trim() || undefined,
             instagram: body.instagram?.trim() || undefined,
-            website: body.website?.trim() || undefined
+            website: body.website?.trim() || undefined,
+            zaloUrl: body.zaloUrl?.trim() || undefined,
+            slogan: body.slogan?.trim() || undefined
         };
 
         // Update or create settings (upsert)

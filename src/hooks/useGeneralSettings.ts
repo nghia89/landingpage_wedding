@@ -16,6 +16,8 @@ export interface GeneralSettings {
     facebookPage?: string;
     instagram?: string;
     website?: string;
+    zaloUrl?: string;
+    slogan?: string;
     createdAt?: string;
     updatedAt?: string;
 }

@@ -6,12 +6,6 @@ export async function GET(request: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
 
-        console.log('Session check - session:', session ? 'Found' : 'Not found');
-        if (session) {
-            console.log('Session expires:', session.expires);
-            console.log('Session error:', session.error);
-        }
-
         if (!session) {
             return NextResponse.json(
                 { error: 'Unauthorized', message: 'No session found' },
@@ -36,23 +30,18 @@ export async function GET(request: NextRequest) {
         // Calculate token expiry times
         const now = Date.now();
 
-        // If session.expires is undefined, calculate based on session maxAge (30 minutes)
+        // If session.expires is undefined, calculate based on session maxAge (1 day)
         let sessionExpiry: number;
         if (session.expires) {
             sessionExpiry = new Date(session.expires).getTime();
         } else {
-            // Fallback: assume session was created recently and expires in 30 minutes
+            // Fallback: assume session was created recently and expires in 1 day
             // This is not ideal but better than NaN
-            sessionExpiry = now + (30 * 60 * 1000); // 30 minutes from now
+            sessionExpiry = now + (24 * 60 * 60 * 1000); // 1 day from now
         }
 
         const timeRemaining = Math.max(0, sessionExpiry - now);
         const isValid = timeRemaining > 0 && !session.error;
-
-        console.log('Session expires field:', session.expires);
-        console.log('Calculated session expiry:', new Date(sessionExpiry));
-        console.log('Time remaining:', timeRemaining, 'ms');
-        console.log('Is valid:', isValid);
 
         return NextResponse.json({
             success: true,
@@ -64,7 +53,8 @@ export async function GET(request: NextRequest) {
             tokenStatus: {
                 accessTokenValid: isValid,
                 timeRemainingMinutes: Math.floor(timeRemaining / (1000 * 60)),
-                nextRefreshIn: timeRemaining > 1800000 ? '~30 minutes' : 'Soon', // 30 min = 1800000ms
+                timeRemainingDays: Math.floor(timeRemaining / (1000 * 60 * 60 * 24)),
+                nextRefreshIn: timeRemaining > 3600000 ? `~${Math.ceil(timeRemaining / (1000 * 60 * 60))} hours` : 'Soon', // 1 hour = 3600000ms
             }
         });
     } catch (error) {

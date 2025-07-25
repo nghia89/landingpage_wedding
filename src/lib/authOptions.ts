@@ -18,7 +18,7 @@ async function refreshAccessToken(token: any) {
         // Generate new access token with extended expiry
         return {
             ...token,
-            accessTokenExpires: Date.now() + 30 * 60 * 1000, // 30 minutes from now
+            accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 1 day from now
             // Keep the same refresh token expiry
         };
     } catch (error) {
@@ -80,7 +80,7 @@ export const authOptions: NextAuthOptions = {
     ],
     session: {
         strategy: 'jwt' as const,
-        maxAge: 30 * 60, // 30 minutes (access token)
+        maxAge: 24 * 60 * 60, // 1 day (86400 seconds)
     },
     callbacks: {
         async jwt({ token, user, account }: any) {
@@ -89,8 +89,8 @@ export const authOptions: NextAuthOptions = {
                 return {
                     ...token,
                     role: user.role,
-                    accessTokenExpires: Date.now() + 30 * 60 * 1000, // 30 minutes
-                    refreshTokenExpires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+                    accessTokenExpires: Date.now() + 24 * 60 * 60 * 1000, // 1 day
+                    refreshTokenExpires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days (refresh token vẫn giữ 7 ngày)
                 };
             }
 
