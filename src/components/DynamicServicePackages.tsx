@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, memo } from 'react';
 import { useServices } from '@/hooks/useApi';
 import { Service } from '@/types/api';
 
@@ -145,9 +145,9 @@ function ServiceCard({ service, isPopular = false, onScrollToContact }: ServiceC
                     {/* Price */}
                     <div className="mb-4">
                         <div className={`text-2xl lg:text-3xl font-bold mb-1 ${style.accentColor === 'rose-500' ? 'text-rose-500' :
-                                style.accentColor === 'rose-600' ? 'text-rose-600' :
-                                    style.accentColor === 'purple-500' ? 'text-purple-500' :
-                                        'text-gray-500'
+                            style.accentColor === 'rose-600' ? 'text-rose-600' :
+                                style.accentColor === 'purple-500' ? 'text-purple-500' :
+                                    'text-gray-500'
                             }`}>
                             {formatPrice(service.price)}đ
                         </div>
@@ -162,9 +162,9 @@ function ServiceCard({ service, isPopular = false, onScrollToContact }: ServiceC
                     {service.features.map((feature, index) => (
                         <div key={index} className="flex items-start space-x-2.5">
                             <div className={`flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center mt-0.5 ${style.accentColor === 'rose-500' ? 'bg-rose-500' :
-                                    style.accentColor === 'rose-600' ? 'bg-rose-600' :
-                                        style.accentColor === 'purple-500' ? 'bg-purple-500' :
-                                            'bg-gray-500'
+                                style.accentColor === 'rose-600' ? 'bg-rose-600' :
+                                    style.accentColor === 'purple-500' ? 'bg-purple-500' :
+                                        'bg-gray-500'
                                 }`}>
                                 <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -206,7 +206,7 @@ function ServiceCard({ service, isPopular = false, onScrollToContact }: ServiceC
     );
 }
 
-export default function DynamicServicePackages() {
+function DynamicServicePackages() {
     // Memoize params để tránh re-render
     const serviceParams = useMemo(() => ({ active: true }), []);
     const { data: services, loading, error, execute } = useServices(serviceParams);
@@ -327,3 +327,6 @@ export default function DynamicServicePackages() {
         </section>
     );
 }
+
+// Memoize component để tránh re-render không cần thiết
+export default memo(DynamicServicePackages);

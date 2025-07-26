@@ -13,21 +13,28 @@ export default function HeroSection({ settings }: HeroSectionProps) {
     const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        let ticking = false;
+
         const handleScroll = () => {
-            if (backgroundRef.current && contentRef.current) {
-                const scrolled = window.pageYOffset;
-                const parallaxSpeed = 0.5;
-                const contentSpeed = 0.2;
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    if (backgroundRef.current && contentRef.current) {
+                        const scrolled = window.pageYOffset;
+                        const parallaxSpeed = 0.5;
+                        const contentSpeed = 0.2;
 
-                // Background parallax - slower movement
-                backgroundRef.current.style.transform = `translateY(${scrolled * parallaxSpeed}px)`;
-
-                // Content parallax - subtle movement
-                contentRef.current.style.transform = `translateY(${scrolled * contentSpeed}px)`;
+                        // Sử dụng transform3d để kích hoạt hardware acceleration
+                        backgroundRef.current.style.transform = `translate3d(0, ${scrolled * parallaxSpeed}px, 0)`;
+                        contentRef.current.style.transform = `translate3d(0, ${scrolled * contentSpeed}px, 0)`;
+                    }
+                    ticking = false;
+                });
+                ticking = true;
             }
         };
 
-        window.addEventListener('scroll', handleScroll);
+        // Throttle scroll events
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 

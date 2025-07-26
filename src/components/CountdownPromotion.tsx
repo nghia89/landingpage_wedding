@@ -19,13 +19,24 @@ export default function CountdownPromotion() {
     });
     const [isClient, setIsClient] = useState(false);
 
-    // Set countdown end date (7 days from now for demo)
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 7);
-    endDate.setHours(23, 59, 59, 999);
+    // Generate stable sparkle positions - only calculated once
+    const [sparklePositions] = useState(() =>
+        [...Array(20)].map(() => ({
+            left: Math.random() * 100,
+            top: Math.random() * 100,
+            delay: Math.random() * 3,
+            duration: 2 + Math.random() * 2,
+            scale: 0.8 + Math.random() * 0.4 // Random scale for variety
+        }))
+    );
 
     useEffect(() => {
         setIsClient(true); // Only set to true on client side
+
+        // Set countdown end date (7 days from now for demo) - inside useEffect to avoid recreation
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 7);
+        endDate.setHours(23, 59, 59, 999);
 
         const calculateTimeLeft = (): TimeLeft => {
             const now = new Date().getTime();
@@ -43,15 +54,15 @@ export default function CountdownPromotion() {
             return { days: 0, hours: 0, minutes: 0, seconds: 0 };
         };
 
+        // Set initial state immediately
+        setTimeLeft(calculateTimeLeft());
+
         const timer = setInterval(() => {
             setTimeLeft(calculateTimeLeft());
         }, 1000);
 
-        // Set initial state
-        setTimeLeft(calculateTimeLeft());
-
         return () => clearInterval(timer);
-    }, []);
+    }, []); // Empty dependency array - runs only once
 
     const handleScrollToContact = () => {
         const contactSection = document.getElementById('dat-lich-tu-van');
@@ -75,18 +86,19 @@ export default function CountdownPromotion() {
             {/* Sparkles Animation - Only render on client to avoid hydration mismatch */}
             {isClient && (
                 <div className="absolute inset-0 overflow-hidden">
-                    {[...Array(12)].map((_, i) => (
+                    {sparklePositions.map((sparkle, i) => (
                         <div
                             key={i}
-                            className="absolute animate-pulse"
+                            className="absolute animate-bounce"
                             style={{
-                                left: `${Math.random() * 100}%`,
-                                top: `${Math.random() * 100}%`,
-                                animationDelay: `${Math.random() * 3}s`,
-                                animationDuration: `${2 + Math.random() * 2}s`
+                                left: `${sparkle.left}%`,
+                                top: `${sparkle.top}%`,
+                                animationDelay: `${sparkle.delay}s`,
+                                animationDuration: `${sparkle.duration}s`,
+                                transform: `scale(${sparkle.scale})`
                             }}
                         >
-                            <SparklesIcon className="w-4 h-4 text-amber-300 opacity-60" />
+                            <SparklesIcon className="w-4 h-4 text-amber-300 opacity-70 hover:opacity-100 transition-opacity duration-300" />
                         </div>
                     ))}
                 </div>

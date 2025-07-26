@@ -1,35 +1,50 @@
 @import "tailwindcss";
 
+/* Critical styles for performance */
+* {
+  box-sizing: border-box;
+}
+
 body {
   background: #fefbf8;
   color: #2d1810;
   font-family: var(--font-inter), 'Segoe UI', system-ui, -apple-system, sans-serif;
   line-height: 1.6;
+  margin: 0;
+  padding: 0;
 }
 
 .font-serif {
   font-family: var(--font-playfair), Georgia, serif;
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling với performance optimization */
 html {
   scroll-behavior: smooth;
 }
 
-/* Elegant animations */
+/* Hardware acceleration cho smooth animations */
+.parallax-element {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Elegant animations với will-change optimization */
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translate3d(0, 30px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 .animate-fade-in-up {
   animation: fadeInUp 0.8s ease-out;
+  will-change: transform, opacity;
 }
 
 /* Line clamp utility classes */
