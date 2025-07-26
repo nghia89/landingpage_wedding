@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Promotion, PromotionCreateData } from '@/hooks/usePromotions';
+import ImageUploadCloudinary from './ImageUploadCloudinary';
 
 interface PromotionFormProps {
     isOpen: boolean;
@@ -95,9 +96,197 @@ export default function PromotionForm({
                             </button>
                         </div>
 
-                        <p className="text-sm text-gray-600">
-                            Promotion form will be implemented here
+                        <p className="text-sm text-gray-600 mb-6">
+                            {isEditing ? 'Chỉnh sửa thông tin khuyến mãi' : 'Điền thông tin khuyến mãi mới'}
                         </p>
+
+                        {/* Form Fields */}
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+
+                            // Validation
+                            if (!formData.imageUrl) {
+                                setErrors({ ...errors, imageUrl: 'Vui lòng tải lên hình ảnh khuyến mãi' });
+                                return;
+                            }
+
+                            // Clear errors and submit
+                            setErrors({});
+                            onSubmit(formData);
+                        }} className="space-y-4">
+                            {/* Title */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Tiêu đề khuyến mãi *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.title}
+                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                    placeholder="Nhập tiêu đề khuyến mãi"
+                                    required
+                                />
+                            </div>
+
+                            {/* Description */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Mô tả
+                                </label>
+                                <textarea
+                                    value={formData.description}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                    placeholder="Nhập mô tả khuyến mãi"
+                                    rows={3}
+                                />
+                            </div>
+
+                            {/* Image Upload */}
+                            <div>
+                                <ImageUploadCloudinary
+                                    label="Hình ảnh khuyến mãi *"
+                                    defaultValue={formData.imageUrl}
+                                    onUpload={(url) => {
+                                        setFormData({ ...formData, imageUrl: url });
+                                        // Clear image error when user uploads
+                                        if (errors.imageUrl) {
+                                            setErrors({ ...errors, imageUrl: '' });
+                                        }
+                                    }}
+                                    className="w-full"
+                                />
+                                {errors.imageUrl && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.imageUrl}</p>
+                                )}
+                            </div>
+
+                            {/* Type and Target Page */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Loại hiển thị *
+                                    </label>
+                                    <select
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                    >
+                                        <option value="popup">Popup</option>
+                                        <option value="banner">Banner</option>
+                                        <option value="slide">Slide</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Trang áp dụng *
+                                    </label>
+                                    <select
+                                        value={formData.targetPage}
+                                        onChange={(e) => setFormData({ ...formData, targetPage: e.target.value as any })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                    >
+                                        <option value="landing">Landing Page</option>
+                                        <option value="booking">Booking Page</option>
+                                        <option value="homepage">Homepage</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Start and End Date */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Ngày bắt đầu *
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={formData.startDate}
+                                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Ngày kết thúc *
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={formData.endDate}
+                                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            {/* CTA Text and Link */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Text Call-to-Action
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.ctaText}
+                                        onChange={(e) => setFormData({ ...formData, ctaText: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                        placeholder="Đặt lịch ngay"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Link Call-to-Action
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.ctaLink}
+                                        onChange={(e) => setFormData({ ...formData, ctaLink: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                        placeholder="https://example.com/booking"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Priority and Active Status */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Độ ưu tiên
+                                    </label>
+                                    <input
+                                        type="number"
+                                        value={formData.priority}
+                                        onChange={(e) => setFormData({ ...formData, priority: Number(e.target.value) })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                                        min="1"
+                                        max="10"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Trạng thái
+                                    </label>
+                                    <div className="flex items-center space-x-4 pt-2">
+                                        <label className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={formData.isActive}
+                                                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                                                className="rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+                                            />
+                                            <span className="ml-2 text-sm text-gray-700">Kích hoạt</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
 
                     <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">

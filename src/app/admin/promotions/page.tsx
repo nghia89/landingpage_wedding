@@ -7,9 +7,10 @@ import AdminAuthGuard from '@/components/AdminAuthGuard';
 import PromotionForm from '@/components/admin/PromotionForm';
 import PromotionFilters from '@/components/admin/PromotionFilters';
 import PromotionTable from '@/components/admin/PromotionTable';
-import { showToast } from '@/utils/toast';
+import { useToast } from '@/components/ToastProvider';
 
 export default function PromotionsPage() {
+    const { showToast } = useToast();
     const {
         promotions,
         loading,
@@ -32,9 +33,17 @@ export default function PromotionsPage() {
         const success = await createPromotion(data);
         if (success) {
             setIsFormOpen(false);
-            showToast('Tạo khuyến mãi thành công!', 'success');
+            showToast({
+                type: 'success',
+                title: 'Thành công',
+                message: 'Tạo khuyến mãi thành công!'
+            });
         } else {
-            showToast('Có lỗi xảy ra khi tạo khuyến mãi', 'error');
+            showToast({
+                type: 'error',
+                title: 'Lỗi',
+                message: 'Có lỗi xảy ra khi tạo khuyến mãi'
+            });
         }
     };
 
@@ -46,20 +55,36 @@ export default function PromotionsPage() {
         if (success) {
             setIsFormOpen(false);
             setEditingPromotion(null);
-            showToast('Cập nhật khuyến mãi thành công!', 'success');
+            showToast({
+                type: 'success',
+                title: 'Thành công',
+                message: 'Cập nhật khuyến mãi thành công!'
+            });
         } else {
-            showToast('Có lỗi xảy ra khi cập nhật khuyến mãi', 'error');
+            showToast({
+                type: 'error',
+                title: 'Lỗi',
+                message: 'Có lỗi xảy ra khi cập nhật khuyến mãi'
+            });
         }
     };
 
-    // Handle delete single promotion
+    // Handle delete promotion
     const handleDeletePromotion = async (id: string) => {
         if (window.confirm('Bạn có chắc chắn muốn xóa khuyến mãi này?')) {
             const success = await deletePromotion(id);
             if (success) {
-                showToast('Xóa khuyến mãi thành công!', 'success');
+                showToast({
+                    type: 'success',
+                    title: 'Thành công',
+                    message: 'Xóa khuyến mãi thành công!'
+                });
             } else {
-                showToast('Có lỗi xảy ra khi xóa khuyến mãi', 'error');
+                showToast({
+                    type: 'error',
+                    title: 'Lỗi',
+                    message: 'Có lỗi xảy ra khi xóa khuyến mãi'
+                });
             }
         }
     };
@@ -72,9 +97,17 @@ export default function PromotionsPage() {
             const success = await deleteMultiplePromotions(selectedPromotions);
             if (success) {
                 setSelectedPromotions([]);
-                showToast(`Xóa ${selectedPromotions.length} khuyến mãi thành công!`, 'success');
+                showToast({
+                    type: 'success',
+                    title: 'Thành công',
+                    message: `Xóa ${selectedPromotions.length} khuyến mãi thành công!`
+                });
             } else {
-                showToast('Có lỗi xảy ra khi xóa khuyến mãi', 'error');
+                showToast({
+                    type: 'error',
+                    title: 'Lỗi',
+                    message: 'Có lỗi xảy ra khi xóa khuyến mãi'
+                });
             }
         }
     };

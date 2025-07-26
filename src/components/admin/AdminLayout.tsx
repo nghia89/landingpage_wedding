@@ -24,7 +24,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         { name: 'Dịch vụ', href: '/admin/services', icon: 'heart', current: pathname === '/admin/services' },
         { name: 'Thư viện ảnh', href: '/admin/gallery', icon: 'photo', current: pathname === '/admin/gallery' },
         { name: 'Khách hàng đánh giá', href: '/admin/reviews', icon: 'star', current: pathname === '/admin/reviews' },
-        { name: 'Khuyến mãi', href: '/admin/promotions', icon: 'gift', current: pathname === '/admin/promotions' },
+        // { name: 'Khuyến mãi', href: '/admin/promotions', icon: 'gift', current: pathname === '/admin/promotions' },
         // { name: 'Báo cáo', href: '/admin/reports', icon: 'chart', current: pathname === '/admin/reports' },
         { name: 'Cài đặt', href: '/admin/settings', icon: 'settings', current: pathname === '/admin/settings' },
     ];
