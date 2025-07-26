@@ -1,4 +1,10 @@
-export default function Footer() {
+import { PublicSettings } from '@/types/settings';
+
+interface FooterProps {
+    settings?: PublicSettings | null;
+}
+
+export default function Footer({ settings }: FooterProps) {
     return (
         <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-16 lg:py-20 relative overflow-hidden">
             {/* Background decorative elements */}
@@ -15,13 +21,12 @@ export default function Footer() {
                     <div className="lg:col-span-2">
                         <div className="mb-8">
                             <h3 className="text-3xl lg:text-4xl font-serif font-bold mb-4 bg-gradient-to-r from-rose-400 to-pink-400 bg-clip-text text-transparent">
-                                Wedding Dreams
+                                {settings?.brandName || 'Wedding Dreams'}
                             </h3>
                             <div className="w-16 h-1 bg-gradient-to-r from-rose-400 to-pink-400 rounded-full mb-6"></div>
                         </div>
                         <p className="text-gray-300 leading-relaxed mb-6 text-lg font-light max-w-md">
-                            Chúng tôi chuyên tổ chức những đám cưới hoàn hảo, biến giấc mơ của bạn thành hiện thực
-                            với dịch vụ chuyên nghiệp và tận tâm. Mỗi khoảnh khắc đều trở thành kỷ niệm đáng nhớ.
+                            {settings?.description || 'Chúng tôi chuyên tổ chức những đám cưới hoàn hảo, biến giấc mơ của bạn thành hiện thực với dịch vụ chuyên nghiệp và tận tâm. Mỗi khoảnh khắc đều trở thành kỷ niệm đáng nhớ.'}
                         </p>
                         <div className="flex items-center space-x-2 text-sm text-gray-400">
                             <svg className="w-4 h-4 text-rose-400" fill="currentColor" viewBox="0 0 20 20">
@@ -45,8 +50,7 @@ export default function Footer() {
                                 </div>
                                 <div>
                                     <p className="text-gray-300 font-medium leading-relaxed">
-                                        123 Đường ABC, Quận 1<br />
-                                        TP. Hồ Chí Minh
+                                        {settings?.address || '123 Đường ABC, Quận 1'}
                                     </p>
                                 </div>
                             </div>
@@ -56,8 +60,8 @@ export default function Footer() {
                                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                     </svg>
                                 </div>
-                                <a href="tel:0123456789" className="text-gray-300 hover:text-rose-400 transition-colors duration-300 font-medium">
-                                    0123 456 789
+                                <a href={`tel:${settings?.phone || '0123456789'}`} className="text-gray-300 hover:text-rose-400 transition-colors duration-300 font-medium">
+                                    {settings?.phone || '0123 456 789'}
                                 </a>
                             </div>
                             <div className="flex items-center group">
@@ -67,8 +71,8 @@ export default function Footer() {
                                         <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
                                     </svg>
                                 </div>
-                                <a href="mailto:info@weddingdreams.vn" className="text-gray-300 hover:text-rose-400 transition-colors duration-300 font-medium">
-                                    info@weddingdreams.vn
+                                <a href={`mailto:${settings?.email || 'info@weddingdreams.vn'}`} className="text-gray-300 hover:text-rose-400 transition-colors duration-300 font-medium">
+                                    {settings?.email || 'info@weddingdreams.vn'}
                                 </a>
                             </div>
                         </div>
@@ -93,21 +97,21 @@ export default function Footer() {
                             <p className="text-gray-400 text-sm mb-4 font-medium">Theo dõi chúng tôi:</p>
                             <div className="flex space-x-4">
                                 {/* Facebook */}
-                                <a href="#" className="group relative w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center hover:from-blue-500 hover:to-blue-600 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 hover:scale-110 hover:-translate-y-1">
+                                <a href={settings?.facebookPage || '#'} target={settings?.facebookPage ? '_blank' : '_self'} rel={settings?.facebookPage ? 'noopener noreferrer' : ''} className="group relative w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center hover:from-blue-500 hover:to-blue-600 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 hover:scale-110 hover:-translate-y-1">
                                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                                     </svg>
                                 </a>
 
                                 {/* Instagram */}
-                                <a href="#" className="group relative w-12 h-12 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 rounded-xl flex items-center justify-center hover:from-pink-400 hover:via-purple-400 hover:to-indigo-400 transition-all duration-300 shadow-lg hover:shadow-pink-500/25 hover:scale-110 hover:-translate-y-1">
+                                <a href={settings?.instagram || '#'} target={settings?.instagram ? '_blank' : '_self'} rel={settings?.instagram ? 'noopener noreferrer' : ''} className="group relative w-12 h-12 bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-500 rounded-xl flex items-center justify-center hover:from-pink-400 hover:via-purple-400 hover:to-indigo-400 transition-all duration-300 shadow-lg hover:shadow-pink-500/25 hover:scale-110 hover:-translate-y-1">
                                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987 6.62 0 11.987-5.367 11.987-11.987C24.014 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.348-1.051-2.348-2.348s1.051-2.348 2.348-2.348 2.348 1.051 2.348 2.348-1.051 2.348-2.348 2.348zm7.718 0c-1.297 0-2.348-1.051-2.348-2.348s1.051-2.348 2.348-2.348 2.348 1.051 2.348 2.348-1.051 2.348-2.348 2.348z" />
                                     </svg>
                                 </a>
 
                                 {/* Zalo */}
-                                <a href="#" className="group relative w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center hover:from-blue-400 hover:to-cyan-400 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 hover:scale-110 hover:-translate-y-1">
+                                <a href={settings?.zaloUrl || '#'} target={settings?.zaloUrl ? '_blank' : '_self'} rel={settings?.zaloUrl ? 'noopener noreferrer' : ''} className="group relative w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center hover:from-blue-400 hover:to-cyan-400 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 hover:scale-110 hover:-translate-y-1">
                                     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2c5.514 0 10 4.486 10 10s-4.486 10-10 10S2 17.514 2 12 6.486 2 12 2zm-1 4v12l8-6-8-6z" />
                                     </svg>

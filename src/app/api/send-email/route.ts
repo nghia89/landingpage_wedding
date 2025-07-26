@@ -35,12 +35,6 @@ export async function POST(request: NextRequest) {
     try {
       // Check if Resend is available
       if (!resend) {
-        console.log('📧 Email would be sent (Resend API key not configured):');
-        console.log('From:', fullName);
-        console.log('Phone:', phone);
-        console.log('Wedding Date:', formattedWeddingDate);
-        console.log('Requirements:', requirements);
-
         return NextResponse.json({
           success: true,
           message: 'Yêu cầu đã được ghi nhận thành công!'
@@ -111,8 +105,6 @@ Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
         `
       });
 
-      console.log('Email sent successfully:', emailResult);
-
       return NextResponse.json({
         success: true,
         message: 'Đã gửi yêu cầu tư vấn thành công! Chúng tôi sẽ liên hệ với bạn trong vòng 24h.'
@@ -122,15 +114,6 @@ Thời gian gửi: ${new Date().toLocaleString('vi-VN')}
       console.error('Email sending error:', emailError);
 
       // Fallback - still log the request and return success to user
-      console.log('Fallback - Email content for ntnghia.dev@gmail.com:');
-      console.log({
-        fullName,
-        phone,
-        weddingDate: formattedWeddingDate,
-        requirements,
-        timestamp: new Date().toLocaleString('vi-VN')
-      });
-
       return NextResponse.json({
         success: true,
         message: 'Đã gửi yêu cầu tư vấn thành công! Chúng tôi sẽ liên hệ với bạn trong vòng 24h.'

@@ -2,8 +2,13 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import { PublicSettings } from "@/types/settings";
 
-export default function HeroSection() {
+interface HeroSectionProps {
+    settings?: PublicSettings | null;
+}
+
+export default function HeroSection({ settings }: HeroSectionProps) {
     const backgroundRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
@@ -89,7 +94,7 @@ export default function HeroSection() {
 
                     {/* Subtitle */}
                     <p className="text-lg md:text-xl lg:text-2xl xl:text-3xl font-light max-w-4xl mx-auto leading-relaxed tracking-wide text-gray-100">
-                        Tổ chức tiệc cưới trọn gói – Tư vấn cá nhân hóa – Không gian sang trọng
+                        {settings?.slogan || 'Tổ chức tiệc cưới trọn gói – Tư vấn cá nhân hóa – Không gian sang trọng'}
                     </p>
 
                     {/* Call to Action Buttons */}

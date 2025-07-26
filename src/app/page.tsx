@@ -6,24 +6,30 @@ import WeddingProcessTimeline from "@/components/WeddingProcessTimeline";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import GallerySection from "@/components/GallerySection";
 import ServicePackages from "@/components/ServicePackages";
+import DynamicServicePackages from "@/components/DynamicServicePackages";
 import TestimonialsSection from "@/components/TestimonialsSection";
 import ContactFormSection from "@/components/ContactFormSection";
 import Footer from "@/components/Footer";
+import { fetchPublicSettingsServer } from "@/lib/settings";
+import { PublicSettings } from "@/types/settings";
 
-export default function Home() {
+export default async function Home() {
+  // Fetch settings on server side
+  const settings: PublicSettings | null = await fetchPublicSettingsServer();
+
   return (
     <main>
-      <Navbar />
+      <Navbar settings={settings} />
       <PromoPopup />
-      <HeroSection />
+      <HeroSection settings={settings} />
       <CountdownPromotion />
       <WeddingProcessTimeline />
       <WhyChooseUs />
+      <DynamicServicePackages />
       <GallerySection />
-      <ServicePackages />
       <TestimonialsSection />
-      <ContactFormSection />
-      <Footer />
+      <ContactFormSection settings={settings} />
+      <Footer settings={settings} />
     </main>
   );
 }
