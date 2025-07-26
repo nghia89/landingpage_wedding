@@ -125,24 +125,24 @@ export const GET = withMongo(async (request: NextRequest): Promise<NextResponse<
         // If no settings exist, create default settings
         if (!settings) {
             const defaultSettings = new GeneralSettings({});
-            settings = await defaultSettings.save();
+            settings = await defaultSettings.save() as IGeneralSettings;
         }
 
         // Return only public fields (exclude sensitive data)
         const publicSettings = {
-            brandName: settings.brandName,
-            logoUrl: settings.logoUrl || undefined,
-            description: settings.description || undefined,
-            address: settings.address,
-            phone: settings.phone,
-            email: settings.email,
-            openTime: settings.openTime,
-            closeTime: settings.closeTime,
-            facebookPage: settings.facebookPage || undefined,
-            instagram: settings.instagram || undefined,
-            website: settings.website || undefined,
-            zaloUrl: settings.zaloUrl || undefined,
-            slogan: settings.slogan || undefined
+            brandName: settings!.brandName,
+            logoUrl: settings!.logoUrl || undefined,
+            description: settings!.description || undefined,
+            address: settings!.address,
+            phone: settings!.phone,
+            email: settings!.email,
+            openTime: settings!.openTime,
+            closeTime: settings!.closeTime,
+            facebookPage: settings!.facebookPage || undefined,
+            instagram: settings!.instagram || undefined,
+            website: settings!.website || undefined,
+            zaloUrl: settings!.zaloUrl || undefined,
+            slogan: settings!.slogan || undefined
         };
 
         return NextResponse.json({

@@ -3,15 +3,15 @@ import { withMongo } from '@/lib/withMongo';
 import Service from '@/models/Service';
 
 interface ServiceParams {
-    params: {
+    params: Promise<{
         id: string;
-    }
+    }>
 }
 
 // GET - Retrieve single service
 async function getService(request: NextRequest, { params }: ServiceParams) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         if (!id) {
             return NextResponse.json(
@@ -46,7 +46,7 @@ async function getService(request: NextRequest, { params }: ServiceParams) {
 // PUT - Update single service
 async function updateService(request: NextRequest, { params }: ServiceParams) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const body = await request.json();
 
         if (!id) {
@@ -125,7 +125,7 @@ async function updateService(request: NextRequest, { params }: ServiceParams) {
 // DELETE - Delete single service
 async function deleteService(request: NextRequest, { params }: ServiceParams) {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         if (!id) {
             return NextResponse.json(

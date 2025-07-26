@@ -102,10 +102,10 @@ async function seedServices() {
     }
 }
 
-export async function POST(request: NextRequest) {
-    return withMongo(async () => await seedServices());
-}
+export const POST = withMongo(async (request: NextRequest) => {
+    return await seedServices();
+});
 
-export async function GET(request: NextRequest) {
-    return withMongo(async () => await seedServices());
-}
+export const GET = withMongo(async (request: NextRequest) => {
+    return await seedServices();
+});

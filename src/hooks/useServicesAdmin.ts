@@ -11,6 +11,7 @@ interface UseServicesFilters {
     category?: string;
     isActive?: boolean;
     search?: string;
+    [key: string]: string | number | boolean | undefined;
 }
 
 interface UseServicesReturn {
@@ -55,10 +56,15 @@ export function useServicesAdmin(): UseServicesReturn {
             setLoading(true);
             setError(null);
 
+            // Filter out undefined values
+            const cleanFilters = Object.fromEntries(
+                Object.entries(filters).filter(([_, value]) => value !== undefined)
+            ) as Record<string, string | number | boolean>;
+
             const response = await apiClient.get<{
                 data: Service[];
                 pagination: typeof pagination;
-            }>('/api/services', filters);
+            }>('/api/services', cleanFilters);
 
             if (response.data) {
                 setServices(response.data.data || []);

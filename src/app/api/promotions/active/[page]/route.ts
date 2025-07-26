@@ -12,10 +12,10 @@ interface ActivePromotionsResponse {
 // GET handler - Fetch active promotions for a specific page
 export const GET = withMongo(async (
     request: NextRequest,
-    { params }: { params: { page: string } }
+    { params }: { params: Promise<{ page: string }> }
 ): Promise<NextResponse<ActivePromotionsResponse>> => {
     try {
-        const { page } = params;
+        const { page } = await params;
         const { searchParams } = new URL(request.url);
         const type = searchParams.get('type'); // Optional filter by type
 

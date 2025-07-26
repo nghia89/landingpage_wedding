@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { signIn, useSession, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -16,7 +16,7 @@ interface ExtendedSession {
     expires: string;
 }
 
-export default function AdminLogin() {
+function AdminLoginForm() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -257,5 +257,17 @@ export default function AdminLogin() {
                 </form>
             </div>
         </div>
+    );
+}
+
+export default function AdminLogin() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-600"></div>
+            </div>
+        }>
+            <AdminLoginForm />
+        </Suspense>
     );
 }

@@ -18,10 +18,10 @@ function isValidObjectId(id: string): boolean {
 // GET handler - Fetch single promotion by ID
 export const GET = withMongo(async (
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<PromotionDetailResponse>> => {
     try {
-        const { id } = params;
+        const { id } = await params;
 
         // Validate promotion ID
         if (!id || !isValidObjectId(id)) {
@@ -79,10 +79,10 @@ export const GET = withMongo(async (
 // PUT handler - Update specific promotion
 export const PUT = withMongo(async (
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ): Promise<NextResponse<PromotionDetailResponse>> => {
     try {
-        const { id } = params;
+        const { id } = await params;
         const body = await request.json();
 
         // Validate promotion ID
