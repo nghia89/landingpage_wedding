@@ -5,13 +5,13 @@ import Customer from '@/models/Customer';
 // PUT: Update customer by ID
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         await connectMongo();
 
         const body = await request.json();
-        const { id } = params;
+        const { id } = await context.params;
 
         // Update customer
         const updatedCustomer = await Customer.findByIdAndUpdate(
@@ -49,12 +49,12 @@ export async function PUT(
 // DELETE: Delete customer by ID
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         await connectMongo();
 
-        const { id } = params;
+        const { id } = await context.params;
 
         // Delete customer
         const deletedCustomer = await Customer.findByIdAndDelete(id);
@@ -88,12 +88,12 @@ export async function DELETE(
 // GET: Get customer by ID
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         await connectMongo();
 
-        const { id } = params;
+        const { id } = await context.params;
 
         // Get customer by ID
         const customer = await Customer.findById(id);

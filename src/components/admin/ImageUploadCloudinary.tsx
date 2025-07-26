@@ -64,9 +64,10 @@ export default function ImageUploadCloudinary({
             } else {
                 throw new Error(response.data.error || 'Upload failed');
             }
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Upload error:', error);
-            setError(error.response?.data?.error || error.message || 'Lỗi upload ảnh');
+            const errorMessage = error instanceof Error ? error.message : 'Lỗi upload ảnh';
+            setError(errorMessage);
         } finally {
             setIsUploading(false);
         }

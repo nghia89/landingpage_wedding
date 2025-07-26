@@ -6,8 +6,6 @@ import {
     Line,
     PieChart,
     Pie,
-    BarChart,
-    Bar,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -19,7 +17,6 @@ import {
 import clsx from 'clsx';
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminAuthGuard from '@/components/AdminAuthGuard';
-import RefreshTokenDemo from '@/components/RefreshTokenDemo';
 
 // Types for the API response
 interface ReportsData {

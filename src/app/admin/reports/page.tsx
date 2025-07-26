@@ -6,8 +6,6 @@ import {
     Line,
     PieChart,
     Pie,
-    BarChart,
-    Bar,
     XAxis,
     YAxis,
     CartesianGrid,

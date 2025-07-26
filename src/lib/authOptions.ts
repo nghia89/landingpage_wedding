@@ -3,9 +3,10 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import connectMongo from '@/lib/mongodb';
 import { User } from '@/models/User';
+import type { JWT } from 'next-auth/jwt';
 
 // Refresh access token function
-async function refreshAccessToken(token: any) {
+async function refreshAccessToken(token: JWT & { accessTokenExpires?: number; refreshTokenExpires?: number }) {
     try {
         // Connect to MongoDB to verify user still exists and is active
         await connectMongo();
@@ -83,7 +84,7 @@ export const authOptions: NextAuthOptions = {
         maxAge: 24 * 60 * 60, // 1 day (86400 seconds)
     },
     callbacks: {
-        async jwt({ token, user, account }: any) {
+        async jwt({ token, user, account }: { token: JWT; user?: any; account?: any }) {
             // Initial sign in
             if (account && user) {
                 return {
@@ -111,7 +112,7 @@ export const authOptions: NextAuthOptions = {
                 error: "RefreshTokenExpired",
             };
         },
-        async session({ session, token }: any) {
+        async session({ session, token }: { session: any; token: JWT & { accessTokenExpires?: number; error?: string } }) {
             if (token && session.user) {
                 session.user.id = token.sub;
                 session.user.role = token.role;

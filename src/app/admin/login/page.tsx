@@ -1,10 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { signIn, getSession, useSession } from 'next-auth/react';
+import { signIn, useSession, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function AdminLoginPage() {
+interface ExtendedUser {
+    id?: string;
+    email?: string;
+    name?: string;
+    role?: string;
+}
+
+interface ExtendedSession {
+    user?: ExtendedUser;
+    expires: string;
+}
+
+export default function AdminLogin() {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -23,7 +35,8 @@ export default function AdminLoginPage() {
     useEffect(() => {
         if (status === 'loading') return; // Still loading
 
-        if (session && (session.user as any)?.role === 'admin') {
+        const sessionUser = session?.user as ExtendedUser;
+        if (session && sessionUser?.role === 'admin') {
             router.push(callbackUrl);
         }
     }, [session, status, router, callbackUrl]);
@@ -41,7 +54,8 @@ export default function AdminLoginPage() {
     }
 
     // Don't show login form if already authenticated
-    if (session && (session.user as any)?.role === 'admin') {
+    const sessionUser = session?.user as ExtendedUser;
+    if (session && sessionUser?.role === 'admin') {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="flex flex-col items-center space-y-4">
@@ -97,8 +111,9 @@ export default function AdminLoginPage() {
                 setError('Email hoặc mật khẩu không đúng');
             } else if (result?.ok) {
                 // Check session to make sure user is admin
-                const session = await getSession();
-                if ((session?.user as any)?.role === 'admin') {
+                const sessionData = await getSession() as ExtendedSession | null;
+                const sessionUser = sessionData?.user as ExtendedUser;
+                if (sessionUser?.role === 'admin') {
                     router.push(callbackUrl);
                 } else {
                     setError('Bạn không có quyền truy cập admin panel');

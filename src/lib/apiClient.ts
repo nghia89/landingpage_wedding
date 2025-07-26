@@ -1,5 +1,5 @@
 // API Response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
     success: boolean;
     data?: T;
     message?: string;
@@ -9,9 +9,9 @@ export interface ApiResponse<T = any> {
 // API Error class
 export class ApiError extends Error {
     public status: number;
-    public data?: any;
+    public data?: unknown;
 
-    constructor(message: string, status: number, data?: any) {
+    constructor(message: string, status: number, data?: unknown) {
         super(message);
         this.name = 'ApiError';
         this.status = status;
@@ -71,8 +71,13 @@ export class ApiClient {
     }
 
     // GET request
-    async get<T>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
-        const searchParams = params ? new URLSearchParams(params).toString() : '';
+    async get<T>(endpoint: string, params?: Record<string, string | number | boolean>): Promise<ApiResponse<T>> {
+        const searchParams = params ? new URLSearchParams(
+            Object.entries(params).reduce((acc, [key, value]) => {
+                acc[key] = String(value);
+                return acc;
+            }, {} as Record<string, string>)
+        ).toString() : '';
         const url = searchParams ? `${endpoint}?${searchParams}` : endpoint;
 
         return this.request<T>(url, {
@@ -81,7 +86,7 @@ export class ApiClient {
     }
 
     // POST request
-    async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+    async post<T>(endpoint: string, data?: unknown): Promise<ApiResponse<T>> {
         return this.request<T>(endpoint, {
             method: 'POST',
             body: data ? JSON.stringify(data) : undefined,
@@ -89,7 +94,7 @@ export class ApiClient {
     }
 
     // PUT request
-    async put<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+    async put<T>(endpoint: string, data?: unknown): Promise<ApiResponse<T>> {
         return this.request<T>(endpoint, {
             method: 'PUT',
             body: data ? JSON.stringify(data) : undefined,

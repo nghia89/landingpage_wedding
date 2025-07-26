@@ -6,12 +6,11 @@ import mongoose from 'mongoose';
 // GET /api/admin/reviews/[id] - Lấy thông tin đánh giá theo ID
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         await connectMongo();
-
-        const { id } = params;
+        const { id } = await context.params;
 
         // Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -50,12 +49,12 @@ export async function GET(
 // PUT /api/admin/reviews/[id] - Cập nhật đánh giá
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         await connectMongo();
 
-        const { id } = params;
+        const { id } = await context.params;
 
         // Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -170,12 +169,12 @@ export async function PUT(
 // DELETE /api/admin/reviews/[id] - Xóa đánh giá
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
         await connectMongo();
 
-        const { id } = params;
+        const { id } = await context.params;
 
         // Kiểm tra ID hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {

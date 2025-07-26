@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
-import TokenStatus from '@/components/TokenStatus';
 
 interface AdminLayoutProps {
     children: React.ReactNode;

@@ -14,7 +14,7 @@ async function getAppointments(request: NextRequest) {
         const search = searchParams.get('search');
 
         // Build query object
-        const query: any = {};
+        const query: Record<string, unknown> = {};
 
         // Filter by status
         if (status && status !== 'all') {

@@ -4,9 +4,9 @@ import Gallery from '@/models/Gallery';
 import mongoose from 'mongoose';
 
 // GET - Lấy thông tin ảnh theo ID
-async function getGalleryById(request: NextRequest, { params }: { params: { id: string } }) {
+async function getGalleryById(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = params;
+        const { id } = await context.params;
 
         // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -42,9 +42,9 @@ async function getGalleryById(request: NextRequest, { params }: { params: { id: 
 }
 
 // PUT - Cập nhật ảnh
-async function updateGallery(request: NextRequest, { params }: { params: { id: string } }) {
+async function updateGallery(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = params;
+        const { id } = await context.params;
         const body = await request.json();
         const { title, description, imageUrl } = body;
 
@@ -121,9 +121,9 @@ async function updateGallery(request: NextRequest, { params }: { params: { id: s
 }
 
 // DELETE - Xóa ảnh
-async function deleteGallery(request: NextRequest, { params }: { params: { id: string } }) {
+async function deleteGallery(request: NextRequest, context: { params: Promise<{ id: string }> }) {
     try {
-        const { id } = params;
+        const { id } = await context.params;
 
         // Validate ObjectId
         if (!mongoose.Types.ObjectId.isValid(id)) {

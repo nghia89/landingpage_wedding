@@ -8,6 +8,15 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+interface CloudinaryUploadResult {
+    secure_url: string;
+    public_id: string;
+    width: number;
+    height: number;
+    format: string;
+    bytes: number;
+}
+
 export async function POST(request: NextRequest) {
     try {
         const formData = await request.formData();
@@ -63,12 +72,12 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            url: (uploadResponse as any).secure_url,
-            public_id: (uploadResponse as any).public_id,
-            width: (uploadResponse as any).width,
-            height: (uploadResponse as any).height,
-            format: (uploadResponse as any).format,
-            bytes: (uploadResponse as any).bytes
+            url: (uploadResponse as CloudinaryUploadResult).secure_url,
+            public_id: (uploadResponse as CloudinaryUploadResult).public_id,
+            width: (uploadResponse as CloudinaryUploadResult).width,
+            height: (uploadResponse as CloudinaryUploadResult).height,
+            format: (uploadResponse as CloudinaryUploadResult).format,
+            bytes: (uploadResponse as CloudinaryUploadResult).bytes
         });
 
     } catch (error) {

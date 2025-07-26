@@ -5,10 +5,10 @@ import Appointment from '@/models/Appointment';
 // GET - Get single appointment by ID
 export const GET = withMongo(async (
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> => {
     try {
-        const { id } = params;
+        const { id } = await context.params;
 
         const appointment = await Appointment.findById(id);
 
@@ -36,10 +36,10 @@ export const GET = withMongo(async (
 // PUT - Update appointment by ID
 export const PUT = withMongo(async (
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> => {
     try {
-        const { id } = params;
+        const { id } = await context.params;
         const body = await request.json();
 
         // Update appointment
@@ -82,10 +82,10 @@ export const PUT = withMongo(async (
 // DELETE - Delete appointment by ID
 export const DELETE = withMongo(async (
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ): Promise<NextResponse> => {
     try {
-        const { id } = params;
+        const { id } = await context.params;
 
         // Delete appointment
         const appointment = await Appointment.findByIdAndDelete(id);

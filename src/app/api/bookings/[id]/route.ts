@@ -5,10 +5,10 @@ import Booking from '@/models/Booking';
 // GET - Get single booking by ID
 async function getBooking(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await context.params;
 
         const booking = await Booking.findById(id);
 
@@ -36,10 +36,10 @@ async function getBooking(
 // PUT - Update booking by ID
 async function updateBooking(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await context.params;
         const body = await request.json();
 
         // Update booking
@@ -82,10 +82,10 @@ async function updateBooking(
 // DELETE - Delete booking by ID
 async function deleteBooking(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
-        const { id } = params;
+        const { id } = await context.params;
 
         // Delete booking
         const booking = await Booking.findByIdAndDelete(id);
