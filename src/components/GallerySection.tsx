@@ -26,21 +26,45 @@ export default function GallerySection() {
 
     // Display settings
     const [showAll, setShowAll] = useState(false);
-    const displayLimit = 8;
+    const displayLimit = 8; // Giảm số ảnh hiển thị ban đầu
 
     // Lightbox state
     const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-    // Fetch galleries from API
+    // Intersection Observer for lazy loading
+    const [isVisible, setIsVisible] = useState(false);
+
+    // Intersection Observer for lazy loading
     useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true);
+                    observer.disconnect();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (sectionRef.current) {
+            observer.observe(sectionRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
+
+    // Fetch galleries from API only when visible
+    useEffect(() => {
+        if (!isVisible) return;
+
         const fetchGalleries = async () => {
             try {
                 setLoading(true);
                 setError(null);
 
-                const response = await fetch('/api/gallery?limit=100');
+                const response = await fetch('/api/gallery?limit=50'); // Giảm limit
                 const data: GalleryApiResponse = await response.json();
 
                 if (data.success && data.data) {
@@ -57,7 +81,7 @@ export default function GallerySection() {
         };
 
         fetchGalleries();
-    }, []);
+    }, [isVisible]);
 
     // Determine which images to display
     const displayedGalleries = showAll ? galleries : galleries.slice(0, displayLimit);
@@ -96,27 +120,21 @@ export default function GallerySection() {
 
     // Keyboard navigation
     useEffect(() => {
+        if (!isLightboxOpen) return;
+
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (isLightboxOpen) {
-                switch (e.key) {
-                    case 'Escape':
-                        closeLightbox();
-                        break;
-                    case 'ArrowRight':
-                        e.preventDefault();
-                        goToNext();
-                        break;
-                    case 'ArrowLeft':
-                        e.preventDefault();
-                        goToPrevious();
-                        break;
-                }
+            if (e.key === 'Escape') {
+                closeLightbox();
+            } else if (e.key === 'ArrowRight') {
+                goToNext();
+            } else if (e.key === 'ArrowLeft') {
+                goToPrevious();
             }
         };
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isLightboxOpen, selectedIndex, displayedGalleries]);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [isLightboxOpen, selectedIndex, displayedGalleries.length]);
 
     return (
         <section

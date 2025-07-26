@@ -77,15 +77,15 @@ export default function WhyChooseUs() {
                     {benefits.map((benefit, index) => (
                         <div
                             key={index}
-                            className="group bg-white/80 backdrop-blur-sm p-8 lg:p-10 rounded-3xl shadow-lg hover:shadow-2xl transform hover:scale-105 hover:-translate-y-2 transition-all duration-500 border border-pink-100/50 relative overflow-hidden"
+                            className="group bg-white/80 backdrop-blur-sm p-8 lg:p-10 rounded-3xl shadow-lg hover:shadow-2xl transform-gpu will-change-transform hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 ease-out border border-pink-100/50 relative overflow-hidden"
                         >
                             {/* Hover gradient overlay */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-rose-50 to-pink-50 opacity-0 group-hover:opacity-50 transition-opacity duration-500 rounded-3xl"></div>
+                            <div className="absolute inset-0 bg-gradient-to-br from-rose-50 to-pink-50 opacity-0 group-hover:opacity-30 transition-opacity duration-300 ease-out rounded-3xl"></div>
 
                             <div className="relative z-10 flex flex-col items-center text-center space-y-6">
                                 {/* Icon */}
-                                <div className="w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-rose-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-500">
-                                    <benefit.icon className="w-10 h-10 lg:w-12 lg:h-12 text-rose-600 group-hover:text-rose-700 transition-colors duration-300" />
+                                <div className="w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-rose-100 to-pink-100 rounded-full flex items-center justify-center shadow-lg group-hover:shadow-xl transform-gpu will-change-transform group-hover:scale-110 transition-all duration-300 ease-out">
+                                    <benefit.icon className="w-10 h-10 lg:w-12 lg:h-12 text-rose-600 group-hover:text-rose-700 transition-colors duration-200 ease-out" />
                                 </div>
 
                                 {/* Title */}
@@ -99,7 +99,7 @@ export default function WhyChooseUs() {
                                 </p>
 
                                 {/* Decorative element */}
-                                <div className="w-12 h-px bg-gradient-to-r from-rose-300 to-pink-300 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                <div className="w-12 h-px bg-gradient-to-r from-rose-300 to-pink-300 opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-out"></div>
                             </div>
                         </div>
                     ))}
@@ -109,7 +109,7 @@ export default function WhyChooseUs() {
                 <div className="text-center mt-16 lg:mt-20">
                     <button
                         onClick={handleScrollToPackages}
-                        className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-semibold px-12 py-4 rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 hover:-translate-y-1 transition-all duration-500 text-lg tracking-wide"
+                        className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-semibold px-12 py-4 rounded-full shadow-xl hover:shadow-2xl transform-gpu will-change-transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 ease-out text-lg tracking-wide"
                     >
                         Khám phá thêm dịch vụ
                     </button>
