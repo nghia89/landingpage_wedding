@@ -18,8 +18,8 @@ interface ExtendedSession {
 
 function AdminLoginForm() {
     const [formData, setFormData] = useState({
-        email: '',
-        password: '',
+        email: 'admin@wedding.vn',
+        password: 'admin123456',
     });
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
